@@ -2,6 +2,7 @@ package com.example.orpriesender.karaoke;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaRecorder;
 import android.os.Bundle;
@@ -9,9 +10,18 @@ import android.os.Environment;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.firebase.ui.auth.AuthUI;
+import com.firebase.ui.auth.ErrorCodes;
+import com.firebase.ui.auth.IdpResponse;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
@@ -20,6 +30,7 @@ public class MainActivity extends Activity {
     private MediaRecorder recorder;
     private String outputFile;
     private TextView message;
+    private static final int RC_SIGN_IN = 123;
 
     @Override
     protected void onResume() {
@@ -31,6 +42,9 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+
         record = (Button) findViewById(R.id.record);
         stop = (Button) findViewById(R.id.stop);
         message = (TextView) findViewById(R.id.message);
@@ -74,14 +88,18 @@ public class MainActivity extends Activity {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                Intent intent = new Intent(MainActivity.this,ResultActivity.class);
-                intent.putExtra("outputFile",outputFile);
+                Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+                intent.putExtra("outputFile", outputFile);
                 //change to real result from server
-                intent.putExtra("result",100);
+                intent.putExtra("result", 100);
                 startActivity(intent);
 
             }
         });
 
     }
+
+
+
+
 }

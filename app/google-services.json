@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "692409342973",
+    "firebase_url": "https://karaoke-ef68b.firebaseio.com",
+    "project_id": "karaoke-ef68b",
+    "storage_bucket": "karaoke-ef68b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:692409342973:android:ef4fe073eb6b1053",
+        "android_client_info": {
+          "package_name": "com.example.orpriesender.karaoke"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "692409342973-aff5ta03g80jjh1thmuf2d6ts27one6b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeFEAjGZSDBvKKZ_IX-kmTX91vhNaj4PY"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

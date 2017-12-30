@@ -52,7 +52,7 @@ public class AuthActivity extends Activity {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
                 Intent intent = new Intent(getApplicationContext(),MainActivity.class);
-                intent.putExtra("user",user.getDisplayName());
+                intent.putExtra("user",user.getUid());
                 startActivity(intent);
             } else {
                 Context context = getApplicationContext();

@@ -12,6 +12,7 @@ import android.widget.MediaController;
 import android.widget.TextView;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by Or Priesender on 11-Dec-17.
@@ -73,7 +74,14 @@ public class ResultActivity extends Activity {
                 finish();
             }
         });
-    }
 
+        WebServiceUtil util = WebServiceUtil.getInstance("http://10.0.0.2:5000",getBaseContext());
+        util.getGrade(outputFile, new onGradeResponseListener() {
+            @Override
+            public void onGradeResponse(Integer grade) {
+                Log.d("TAG","got response !");
+            }
+        });
+    }
 
 }

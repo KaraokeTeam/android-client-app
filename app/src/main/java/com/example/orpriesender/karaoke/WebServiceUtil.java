@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Environment;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.Gravity;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
@@ -25,25 +26,30 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
- * Created by Or Priesender on 27-Dec-17.
+ * Utility for accessing the python web service.
  */
 
 public class WebServiceUtil {
+    //base web service url
     private String baseUrl;
+    //the Retrofit client
     private WebServiceClient client;
+    //the application context
     private Context context;
+    //singleton instance
     private static  WebServiceUtil instance;
 
-
+    //get the singleton instance
     public static final WebServiceUtil getInstance(String baseUrl,Context context){
         if(instance == null)
             instance = new WebServiceUtil(baseUrl,context);
         return instance;
     }
 
+    //constructor
     private WebServiceUtil(@Nullable String baseUrl,Context context){
         if(baseUrl == null)
-            this.baseUrl = "http://10.0.0.2:5000/";
+            this.baseUrl = "http://10.160.19.250:5000/";
         else
             this.baseUrl = baseUrl;
 
@@ -58,16 +64,12 @@ public class WebServiceUtil {
                         );
 
         Retrofit retrofit =
-                builder
-                        .client(
-                                httpClient.build()
-                        )
-                        .build();
+                builder.client(httpClient.build()).build();
 
         this.client = retrofit.create(WebServiceClient.class);
     }
 
-
+    //get note groups from the web service
     public void getNoteGroups(String filename,final onNoteGroupsResponseListener listener){
         File st = Environment.getDataDirectory();
         File file = new File(st,filename);
@@ -83,12 +85,16 @@ public class WebServiceUtil {
         call.enqueue(new Callback<List<NoteGroup>>() {
             @Override
             public void onResponse(Call<List<NoteGroup>> call, Response<List<NoteGroup>> response) {
+                Toast toast = Toast.makeText(context,"Successfully sent file",Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP,0,200);
+                toast.show();
                 listener.onNoteGroupsResponse(response.body());
             }
 
             @Override
             public void onFailure(Call<List<NoteGroup>> call, Throwable t) {
                 Toast toast = Toast.makeText(context,"Failure sending file",Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.TOP,0,200);
                 toast.show();
             }
         });
@@ -111,7 +117,8 @@ public class WebServiceUtil {
             @Override
             public void onResponse(Call<Integer> call, Response<Integer> response) {
                 listener.onGradeResponse(response.body());
-                Toast toast = Toast.makeText(context,"Successfully sent file",Toast.LENGTH_LONG);
+                Toast toast = Toast.makeText(context,"Successfully sent file",Toast.LENGTH_SHORT);
+                toast.setGravity(Gravity.TOP,0,200);
                 toast.show();
             }
 
@@ -119,6 +126,7 @@ public class WebServiceUtil {
             public void onFailure(Call<Integer> call, Throwable t) {
                 Log.e("error",t.getMessage());
                 Toast toast = Toast.makeText(context,"Failure sending file",Toast.LENGTH_LONG);
+                toast.setGravity(Gravity.TOP,0,200);
                 toast.show();
             }
         });

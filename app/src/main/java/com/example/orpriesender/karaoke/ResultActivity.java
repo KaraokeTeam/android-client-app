@@ -44,6 +44,8 @@ public class ResultActivity extends Activity {
             public void onClick(View v) {
                 try {
                     try {
+                        play.setImageResource(R.drawable.pause);
+                        play.setBackgroundColor(getResources().getColor(R.color.fui_transparent));
                         player = new MediaPlayer();
                         player.setDataSource(outputFile);
                     } catch (IOException e) {
@@ -55,6 +57,8 @@ public class ResultActivity extends Activity {
                         @Override
                         public void onCompletion(MediaPlayer mp) {
                             play.setEnabled(true);
+                            play.setImageResource(R.drawable.play);
+                            play.setBackgroundColor(getResources().getColor(R.color.fui_transparent));
                         }
                     });
                     play.setEnabled(false);
@@ -75,11 +79,12 @@ public class ResultActivity extends Activity {
             }
         });
 
-        WebServiceUtil util = WebServiceUtil.getInstance("http://10.0.0.2:5000",getBaseContext());
+        WebServiceUtil util = WebServiceUtil.getInstance("http://10.160.19.250:5000/",getBaseContext());
         util.getGrade(outputFile, new onGradeResponseListener() {
             @Override
             public void onGradeResponse(Integer grade) {
-                Log.d("TAG","got response !");
+                Log.d("TAG","got response :" + grade);
+                result_number.setText(""+grade);
             }
         });
     }

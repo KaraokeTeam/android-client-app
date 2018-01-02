@@ -75,15 +75,10 @@ public class MainActivity extends Activity {
                 recorder = null;
                 stop.setEnabled(false);
                 record.setEnabled(true);
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
                 Intent intent = new Intent(MainActivity.this, ResultActivity.class);
                 intent.putExtra("outputFile", outputFile);
                 //change to real result from server
-                intent.putExtra("result", 100);
+                intent.putExtra("result", 0);
                 startActivity(intent);
 
             }

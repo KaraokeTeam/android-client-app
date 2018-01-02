@@ -79,7 +79,7 @@ public class ResultActivity extends Activity {
             }
         });
 
-        WebServiceUtil util = WebServiceUtil.getInstance("http://10.160.19.250:5000/",getBaseContext());
+        WebServiceUtil util = WebServiceUtil.getInstance("http://10.0.0.6:5000/",getBaseContext());
         util.getGrade(outputFile, new onGradeResponseListener() {
             @Override
             public void onGradeResponse(Integer grade) {

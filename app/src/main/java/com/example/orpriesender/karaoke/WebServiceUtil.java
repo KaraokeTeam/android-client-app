@@ -49,7 +49,7 @@ public class WebServiceUtil {
     //constructor
     private WebServiceUtil(@Nullable String baseUrl,Context context){
         if(baseUrl == null)
-            this.baseUrl = "http://10.160.19.250:5000/";
+            this.baseUrl = "http://10.0.0.6:5000/";
         else
             this.baseUrl = baseUrl;
 

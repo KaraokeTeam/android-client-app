@@ -124,6 +124,7 @@ public class WebServiceUtil {
 
             @Override
             public void onFailure(Call<Integer> call, Throwable t) {
+                listener.onFailureRespnonse(t.getMessage());
                 Log.e("error",t.getMessage());
                 Toast toast = Toast.makeText(context,"Failure sending file",Toast.LENGTH_LONG);
                 toast.setGravity(Gravity.TOP,0,200);

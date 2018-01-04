@@ -6,4 +6,5 @@ package com.example.orpriesender.karaoke;
 
 public interface onGradeResponseListener {
     public void onGradeResponse(Integer grade);
+    public void onFailureRespnonse(String message);
 }

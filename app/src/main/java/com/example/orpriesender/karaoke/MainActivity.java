@@ -3,10 +3,13 @@ package com.example.orpriesender.karaoke;
 import android.app.Activity;
 import android.content.Intent;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import java.io.IOException;
 
@@ -75,11 +78,26 @@ public class MainActivity extends Activity {
                 recorder = null;
                 stop.setEnabled(false);
                 record.setEnabled(true);
-                Intent intent = new Intent(MainActivity.this, ResultActivity.class);
-                intent.putExtra("outputFile", outputFile);
-                //change to real result from server
-                intent.putExtra("result", 0);
-                startActivity(intent);
+
+                final ProgressBar pb = findViewById(R.id.main_progress_bar);
+                pb.setVisibility(View.VISIBLE);
+                WebServiceUtil util = WebServiceUtil.getInstance("http://10.160.19.157:5000/",getBaseContext());
+                util.getGrade(outputFile, new onGradeResponseListener() {
+                    @Override
+                    public void onGradeResponse(Integer grade) {
+                        Log.d("TAG","got response :" + grade);
+                        Intent intent = new Intent(getApplicationContext(),ResultActivity.class);
+                        intent.putExtra("outputFile",outputFile);
+                        intent.putExtra("grade",grade);
+                        pb.setVisibility(View.GONE);
+                        startActivity(intent);
+                    }
+
+                    @Override
+                    public void onFailureRespnonse(String code) {
+                        pb.setVisibility(View.GONE);
+                    }
+                });
 
             }
         });

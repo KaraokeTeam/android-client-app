@@ -33,7 +33,7 @@ public class ResultActivity extends Activity {
         setContentView(R.layout.activity_result);
         Intent intent = getIntent();
         outputFile = intent.getStringExtra("outputFile");
-        result = intent.getIntExtra("result", 0);
+        result = intent.getIntExtra("grade", 0);
         result_number = findViewById(R.id.result_number);
         result_number.setText(String.valueOf(result));
         play = findViewById(R.id.play);
@@ -79,14 +79,7 @@ public class ResultActivity extends Activity {
             }
         });
 
-        WebServiceUtil util = WebServiceUtil.getInstance("http://10.0.0.6:5000/",getBaseContext());
-        util.getGrade(outputFile, new onGradeResponseListener() {
-            @Override
-            public void onGradeResponse(Integer grade) {
-                Log.d("TAG","got response :" + grade);
-                result_number.setText(""+grade);
-            }
-        });
+
     }
 
 }

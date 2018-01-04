@@ -43,14 +43,10 @@ public class ResultActivity extends Activity {
             @Override
             public void onClick(View v) {
                 try {
-                    try {
-                        play.setImageResource(R.drawable.pause);
-                        play.setBackgroundColor(getResources().getColor(R.color.fui_transparent));
-                        player = new MediaPlayer();
-                        player.setDataSource(outputFile);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    play.setImageResource(R.drawable.pause);
+                    play.setBackgroundColor(getResources().getColor(R.color.fui_transparent));
+                    player = new MediaPlayer();
+                    player.setDataSource(outputFile);
                     player.prepare();
                     player.start();
                     player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {

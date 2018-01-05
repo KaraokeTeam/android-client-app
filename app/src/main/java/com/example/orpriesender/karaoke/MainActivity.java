@@ -1,15 +1,11 @@
 package com.example.orpriesender.karaoke;
 
-import android.*;
 import android.Manifest;
 import android.app.Activity;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
@@ -17,7 +13,6 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
@@ -25,13 +20,12 @@ import android.widget.TextView;
 import android.widget.VideoView;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends Activity {
 
-    private Button record;
-    private Button stop;
+    private Button record_button;
+    private Button stop_button;
+    private Button feed_button;
     private MediaRecorder recorder;
     private String outputFile;
     private TextView message;
@@ -62,21 +56,20 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        record = (Button) findViewById(R.id.record);
-        stop = (Button) findViewById(R.id.stop);
+        record_button = (Button) findViewById(R.id.record);
+        stop_button = (Button) findViewById(R.id.stop);
         message = (TextView) findViewById(R.id.message);
+        feed_button = (Button) findViewById(R.id.feed_button);
+        stop_button.setEnabled(false);
 
-        stop.setEnabled(false);
-
-        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/record.3gp";
-
+        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() + "/record_button.3gp";
         recorder = new MediaRecorder();
         recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         recorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
         recorder.setOutputFile(outputFile);
 
-        record.setOnClickListener(new View.OnClickListener() {
+        record_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 try {
@@ -101,14 +94,14 @@ public class MainActivity extends Activity {
 
                 recorder.start();
                 recording = true;
-                record.setEnabled(false);
-                stop.setEnabled(true);
+                record_button.setEnabled(false);
+                stop_button.setEnabled(true);
                 message.setText("Started Recording");
 
             }
         });
 
-        stop.setOnClickListener(new View.OnClickListener() {
+        stop_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 videoView.stopPlayback();
@@ -118,8 +111,8 @@ public class MainActivity extends Activity {
                 videoPlaying = false;
                 recorder.release();
                 recorder = null;
-                stop.setEnabled(false);
-                record.setEnabled(true);
+                stop_button.setEnabled(false);
+                record_button.setEnabled(true);
 
                 final ProgressBar pb = findViewById(R.id.main_progress_bar);
                 pb.setVisibility(View.VISIBLE);
@@ -142,6 +135,14 @@ public class MainActivity extends Activity {
                     }
                 });
 
+            }
+        });
+
+        feed_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getApplicationContext(),FeedActivity.class);
+                startActivity(intent);
             }
         });
 

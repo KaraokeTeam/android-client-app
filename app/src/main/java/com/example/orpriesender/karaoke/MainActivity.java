@@ -39,7 +39,6 @@ public class MainActivity extends Activity {
     private VideoView videoView;
     private boolean recording = false;
     private boolean videoPlaying = false;
-    private Video video;
     private static final int RC_SIGN_IN = 123;
     private static final int INTERNET_PERMISSION = 111;
     private static final int STORAGE_PERMISSION = 222;
@@ -62,7 +61,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //video = new Video((VideoView)findViewById(R.id.video),"eyal_vid");
         setContentView(R.layout.activity_main);
         record = (Button) findViewById(R.id.record);
         stop = (Button) findViewById(R.id.stop);
@@ -96,11 +94,8 @@ public class MainActivity extends Activity {
                 videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
-                        video.stopVideo();
-
-
-                            //recorder.stop();
-
+                        recorder.stop();
+                        recorder.release();
                     }
                 });
 
@@ -128,7 +123,7 @@ public class MainActivity extends Activity {
 
                 final ProgressBar pb = findViewById(R.id.main_progress_bar);
                 pb.setVisibility(View.VISIBLE);
-                WebServiceUtil util = WebServiceUtil.getInstance("http://10.160.19.157:5000/", getBaseContext());
+                WebServiceUtil util = WebServiceUtil.getInstance("http://10.0.0.6:5000/", getBaseContext());
                 util.getGrade(outputFile, new onGradeResponseListener() {
                     @Override
                     public void onGradeResponse(Integer grade) {
@@ -138,6 +133,7 @@ public class MainActivity extends Activity {
                         intent.putExtra("grade", grade);
                         pb.setVisibility(View.GONE);
                         startActivity(intent);
+
                     }
 
                     @Override

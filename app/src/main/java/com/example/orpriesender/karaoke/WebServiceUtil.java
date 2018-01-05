@@ -12,6 +12,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -54,7 +55,7 @@ public class WebServiceUtil {
             this.baseUrl = baseUrl;
 
         this.context = context;
-        OkHttpClient.Builder httpClient = new OkHttpClient.Builder();
+        OkHttpClient.Builder httpClient = new OkHttpClient.Builder().connectTimeout(1000, TimeUnit.MILLISECONDS).readTimeout(500,TimeUnit.SECONDS);
 
         Retrofit.Builder builder =
                 new Retrofit.Builder()

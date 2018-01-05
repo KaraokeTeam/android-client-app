@@ -8,12 +8,11 @@
     tools:context="com.example.orpriesender.karaoke.MainActivity">
 
 
-
     <Button
         android:id="@+id/stop"
         style="@android:style/Widget.Button"
-        android:layout_width="165dp"
-        android:layout_height="76dp"
+        android:layout_width="94dp"
+        android:layout_height="49dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
@@ -22,15 +21,14 @@
         android:text="Stop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/record" />
+        app:layout_constraintStart_toEndOf="@+id/record"
+        app:layout_constraintTop_toBottomOf="@+id/video" />
 
     <Button
         android:id="@+id/record"
         style="@android:style/Widget.Button"
-        android:layout_width="165dp"
-        android:layout_height="76dp"
+        android:layout_width="94dp"
+        android:layout_height="49dp"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
@@ -38,11 +36,21 @@
         android:background="@android:drawable/btn_default"
         android:text="Record"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintEnd_toStartOf="@+id/stop"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.693" />
+        app:layout_constraintTop_toBottomOf="@+id/video" />
+
+    <Button
+        android:id="@+id/feed_button"
+        style="@android:style/Widget.Button.Small"
+        android:layout_width="102dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:text="Feed ->"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:layout_editor_absoluteY="455dp" />
 
     <TextView
         android:id="@+id/message"
@@ -68,11 +76,9 @@
         android:id="@+id/video"
         android:layout_width="350dp"
         android:layout_height="200dp"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/record"
+        android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/message" />

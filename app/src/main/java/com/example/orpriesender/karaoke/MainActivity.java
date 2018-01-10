@@ -66,8 +66,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        ModelFirebase.getInstance().addUser(new User(user));
+       // FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+       // ModelFirebase.getInstance().addUser(new User(user));
         setContentView(R.layout.activity_main);
         record_button = (Button) findViewById(R.id.record);
         stop_button = (Button) findViewById(R.id.stop);

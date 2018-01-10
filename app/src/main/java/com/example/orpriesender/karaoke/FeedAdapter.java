@@ -36,7 +36,9 @@ public class FeedAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return posts.get(position).getId();
+        String postId = posts.get(position).getId();
+        long id = Long.parseLong(postId);
+        return id;
     }
 
     @Override

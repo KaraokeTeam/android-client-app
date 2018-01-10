@@ -5,23 +5,27 @@ package com.example.orpriesender.karaoke;
  */
 
 public class Post {
-    private int id;
+    private String id;
+    private String userId;
     private String username;
-    private String decsription;
+    private String description;
     private String songName;
+    private String time;
+    private String songUrl;
 
-    public Post(int id,String username,String description,String songName){
+
+    public Post(String id,String username,String description,String songName){
         this.username = username;
-        this.decsription = description;
+        this.description = description;
         this.songName = songName;
         this.id = id;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -33,12 +37,12 @@ public class Post {
         this.username = username;
     }
 
-    public String getDecsription() {
-        return decsription;
+    public String getDescription() {
+        return description;
     }
 
-    public void setDecsription(String decsription) {
-        this.decsription = decsription;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getSongName() {

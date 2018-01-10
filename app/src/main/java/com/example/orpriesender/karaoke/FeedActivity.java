@@ -21,7 +21,7 @@ public class FeedActivity extends Activity{
 
         List<Post> posts = new ArrayList<>();
         for(int i=0;i<20;i++){
-            posts.add(new Post(i,"user" + i,"bla bla bla bla bla bla bla bla bla bla bla bla ", "song " + i));
+           // posts.add(new Post(i,"user" + i,"bla bla bla bla bla bla bla bla bla bla bla bla ", "song " + i));
         }
 
         FeedAdapter adapter = new FeedAdapter(this,posts);

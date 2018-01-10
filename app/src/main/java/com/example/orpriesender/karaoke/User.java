@@ -1,0 +1,56 @@
+package com.example.orpriesender.karaoke;
+
+import android.net.Uri;
+
+import com.google.firebase.auth.FirebaseUser;
+
+import java.util.List;
+
+/**
+ * Created by Or Priesender on 10-Jan-18.
+ */
+
+public class User {
+    private String id;
+    private String username;
+    private Uri imageUrl;
+    private List<Integer> posts;
+
+    public User(FirebaseUser user){
+        this.id = user.getUid();
+        this.username = user.getDisplayName();
+        this.imageUrl = user.getPhotoUrl();
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public Uri getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(Uri imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public List<Integer> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Integer> posts) {
+        this.posts = posts;
+    }
+}

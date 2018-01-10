@@ -5,7 +5,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 
@@ -52,7 +51,7 @@ public class FeedAdapter extends BaseAdapter {
         //TextView time = (TextView) convertView.findViewById(R.id.time);
         convertView.setTag(position);
         username.setText(posts.get(position).getUsername());
-        description.setText(posts.get(position).getDecsription());
+        description.setText(posts.get(position).getDescription());
 
         return convertView;
     }

@@ -19,6 +19,9 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+
 import java.io.IOException;
 
 import be.tarsos.dsp.AudioDispatcher;
@@ -63,6 +66,8 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        ModelFirebase.getInstance().addUser(new User(user));
         setContentView(R.layout.activity_main);
         record_button = (Button) findViewById(R.id.record);
         stop_button = (Button) findViewById(R.id.stop);

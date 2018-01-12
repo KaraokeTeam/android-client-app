@@ -9,10 +9,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by aboud on 1/10/2018.
@@ -55,19 +57,41 @@ public class Grader {
     }
 
     public Note getNoteFromHz(float pitch){
+        List<String> noteArr = Arrays.asList("C","C#","D","D#","E","F","F#","G","G#","A","A#","B");
         String closestNote = "";
+        int noteIndex = -1;
         int closestOctave = -1;
         double diff = 9999;
+        double signedDiff = 0;
         for(String s : notes.keySet()){
-           for(Double d : notes.get(s)){
-               if(diff > Math.abs(pitch-d)){
-                   diff = pitch - d;
+           List<Double> octaves = notes.get(s);
+           for(int i=0;i < octaves.size(); i++){
+               if(diff > Math.abs(pitch-octaves.get(i))){
+                   diff = Math.abs(pitch - octaves.get(i));
+                   signedDiff = pitch - octaves.get(i);
                    closestNote = s;
-                   closestOctave = notes.get(s).indexOf(d);
+                   closestOctave = i;
+                   noteIndex = noteArr.indexOf(s);
                }
            }
         }
-        return new Note(closestNote,closestOctave,diff);
+        //if the pitch is right on the note return
+        if(diff == 0)
+            return new Note(closestNote,closestOctave,diff);
+        //if the difference is positive, get the note above it and calculate the error
+        else if(diff > 0){
+            double below = notes.get(noteArr.get(noteIndex)).get(closestOctave);
+            double above = notes.get(noteArr.get((noteIndex + 1)%12)).get(closestOctave);
+            double error = (diff / (below-above));
+            return new Note(closestNote,closestOctave,Math.abs(error));
+            //if the difference is negative, get the note below it and calculate the error
+        }else{
+            double below = notes.get(noteArr.get(noteIndex)).get(closestOctave);
+            double above = notes.get(noteArr.get((noteIndex - 1)%12)).get(closestOctave);
+            double error = (diff / (below-above));
+            return new Note(closestNote,closestOctave,Math.abs(error));
+        }
+
     }
 
     //save the current given onset and analyze it

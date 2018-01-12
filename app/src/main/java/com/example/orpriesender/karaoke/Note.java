@@ -17,7 +17,7 @@ public class Note {
 
     @Override
     public String toString() {
-        return this.note + this.octave + "(" + error + ")";
+        return this.note + this.octave + "\n(" + error + ")";
     }
 
     public String getNote() {

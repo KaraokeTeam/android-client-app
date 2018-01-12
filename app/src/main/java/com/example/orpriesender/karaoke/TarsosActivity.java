@@ -50,9 +50,17 @@ public class TarsosActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        grader.consumePitch(new Pitch(pitchInHz,new Float(e.getTimeStamp()),new Float(e.getEndTimeStamp()),res.getProbability()));
-                        pitchText.setText("" + res.getPitch());
-                        noteText.setText(grader.getNoteFromHz(res.getPitch()).toString());
+
+                        if(res.getPitch() != -1){
+                            grader.consumePitch(new Pitch(pitchInHz,new Float(e.getTimeStamp()),new Float(e.getEndTimeStamp()),res.getProbability()));
+                            pitchText.setText("" + res.getPitch());
+                            noteText.setText(grader.getNoteFromHz(res.getPitch()).toString());
+                        } else {
+                            pitchText.setText("0.00");
+                            noteText.setText("--");
+                        }
+
+
                     }
                 });
             }

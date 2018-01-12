@@ -50,8 +50,9 @@ public class TarsosActivity extends Activity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        processPitch(pitchInHz, e.getTimeStamp(), res.getProbability());
                         grader.consumePitch(new Pitch(pitchInHz,new Float(e.getTimeStamp()),new Float(e.getEndTimeStamp()),res.getProbability()));
+                        pitchText.setText("" + res.getPitch());
+                        noteText.setText(grader.getNoteFromHz(res.getPitch()).toString());
                     }
                 });
             }
@@ -89,33 +90,6 @@ public class TarsosActivity extends Activity {
 
     }
 
-    public void processPitch(float pitchInHz, double time, float probability) {
-
-        pitchText.setText("" + pitchInHz);
-
-        if (pitchInHz >= 110 && pitchInHz < 123.47) {
-            //A
-            noteText.setText("A");
-        } else if (pitchInHz >= 123.47 && pitchInHz < 130.81) {
-            //B
-            noteText.setText("B");
-        } else if (pitchInHz >= 130.81 && pitchInHz < 146.83) {
-            //C
-            noteText.setText("C");
-        } else if (pitchInHz >= 146.83 && pitchInHz < 164.81) {
-            //D
-            noteText.setText("D");
-        } else if (pitchInHz >= 164.81 && pitchInHz <= 174.61) {
-            //E
-            noteText.setText("E");
-        } else if (pitchInHz >= 174.61 && pitchInHz < 185) {
-            //F
-            noteText.setText("F");
-        } else if (pitchInHz >= 185 && pitchInHz < 196) {
-            //G
-            noteText.setText("G");
-        }
-    }
 
 
 }

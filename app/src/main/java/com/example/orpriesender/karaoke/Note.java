@@ -1,5 +1,8 @@
 package com.example.orpriesender.karaoke;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+
 /**
  * Created by Or Priesender on 12-Jan-18.
  */
@@ -17,7 +20,8 @@ public class Note {
 
     @Override
     public String toString() {
-        return this.note + this.octave + "\n(" + error + ")";
+        NumberFormat formatter = new DecimalFormat("#0.000");
+        return this.note + this.octave + "\n(" + formatter.format(error) + ")";
     }
 
     public String getNote() {

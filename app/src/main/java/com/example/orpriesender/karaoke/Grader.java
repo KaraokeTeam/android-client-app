@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -75,6 +77,7 @@ public class Grader {
                }
            }
         }
+
         //if the pitch is right on the note return
         if(diff == 0)
             return new Note(closestNote,closestOctave,diff);
@@ -104,6 +107,7 @@ public class Grader {
         if(pitch.getPitch() != -1)
             Log.d("NOTE",this.getNoteFromHz(pitch.getPitch()).toString());
         this.performancePitches.add(pitch);
+
     }
 
     private File loadFileToStorage(InputStream input, String name) throws IOException {

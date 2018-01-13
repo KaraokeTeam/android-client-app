@@ -12,6 +12,7 @@ public class Note {
     int octave;
     double error;
 
+
     public Note(String note,int octave,double error){
         this.note = note;
         this.octave = octave;
@@ -46,5 +47,13 @@ public class Note {
 
     public void setError(double error) {
         this.error = error;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Note note = (Note) obj;
+        if(this.note.equalsIgnoreCase(note.getNote()))
+            return true;
+        return false;
     }
 }

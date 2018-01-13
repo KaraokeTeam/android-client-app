@@ -32,18 +32,22 @@ public class Grader {
 
     private Context context;
 
-    private Map<String,List<Double>> notes;
+    private Map<String, List<Double>> notes;
+    private int currentOffset;
+    private int mistakes;
 
-    public Grader(Context context, String sourcePitchFile, String sourceOnsetFile){
+    public Grader(Context context, String sourcePitchFile, String sourceOnsetFile) {
         //extracts the file from the assets folder and gives it to the pitch and onset readers
+        this.currentOffset = 0;
         this.performanceOnsets = new LinkedList<>();
         this.performancePitches = new LinkedList<>();
         this.context = context;
+        this.mistakes = 0;
         try {
 
             this.notes = getNotesMapFromJson();
-            this.sourcePitches = PitchReader.readPitchesFromFile(loadFileToStorage(context.getAssets().open(sourcePitchFile),"sourcePitch"));
-            this.sourceOnsets = OnsetReader.readOnsetsFromFile(loadFileToStorage(context.getAssets().open(sourceOnsetFile),"sourceOnset"));
+            this.sourcePitches = PitchReader.readPitchesFromFile(loadFileToStorage(context.getAssets().open(sourcePitchFile), "sourcePitch"));
+            this.sourceOnsets = OnsetReader.readOnsetsFromFile(loadFileToStorage(context.getAssets().open(sourceOnsetFile), "sourceOnset"));
             this.getNotesMapFromJson();
 
         } catch (IOException e) {
@@ -51,63 +55,78 @@ public class Grader {
         }
     }
 
-    private Map<String,List<Double>> getNotesMapFromJson() throws IOException {
+    private Map<String, List<Double>> getNotesMapFromJson() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        HashMap<String,List<Double>> map =
-                mapper.readValue(loadFileToStorage(context.getAssets().open("NotesToHz.json"),"notestohz.json"),HashMap.class);
+        HashMap<String, List<Double>> map =
+                mapper.readValue(loadFileToStorage(context.getAssets().open("NotesToHz.json"), "notestohz.json"), HashMap.class);
         return map;
     }
 
-    public Note getNoteFromHz(float pitch){
-        List<String> noteArr = Arrays.asList("C","C#","D","D#","E","F","F#","G","G#","A","A#","B");
+    public Note getNoteFromHz(float pitch) {
+        List<String> noteArr = Arrays.asList("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
         String closestNote = "";
         int noteIndex = -1;
         int closestOctave = -1;
         double diff = 9999;
         double signedDiff = 0;
-        for(String s : notes.keySet()){
-           List<Double> octaves = notes.get(s);
-           for(int i=0;i < octaves.size(); i++){
-               if(diff > Math.abs(pitch-octaves.get(i))){
-                   diff = Math.abs(pitch - octaves.get(i));
-                   signedDiff = pitch - octaves.get(i);
-                   closestNote = s;
-                   closestOctave = i;
-                   noteIndex = noteArr.indexOf(s);
-               }
-           }
+        for (String s : notes.keySet()) {
+            List<Double> octaves = notes.get(s);
+            for (int i = 0; i < octaves.size(); i++) {
+                if (diff > Math.abs(pitch - octaves.get(i))) {
+                    diff = Math.abs(pitch - octaves.get(i));
+                    signedDiff = pitch - octaves.get(i);
+                    closestNote = s;
+                    closestOctave = i;
+                    noteIndex = noteArr.indexOf(s);
+                }
+            }
         }
 
         //if the pitch is right on the note return
-        if(diff == 0)
-            return new Note(closestNote,closestOctave,diff);
-        //if the difference is positive, get the note above it and calculate the error
-        else if(diff > 0){
+        if (diff == 0)
+            return new Note(closestNote, closestOctave, diff);
+            //if the difference is positive, get the note above it and calculate the error
+        else {
             double below = notes.get(noteArr.get(noteIndex)).get(closestOctave);
-            double above = notes.get(noteArr.get((noteIndex + 1)%12)).get(closestOctave);
-            double error = (diff / (below-above));
-            return new Note(closestNote,closestOctave,Math.abs(error));
-            //if the difference is negative, get the note below it and calculate the error
-        }else{
-            double below = notes.get(noteArr.get(noteIndex)).get(closestOctave);
-            double above = notes.get(noteArr.get((noteIndex - 1)%12)).get(closestOctave);
-            double error = (diff / (below-above));
-            return new Note(closestNote,closestOctave,Math.abs(error));
+            double above;
+            //if the difference is positive, get the note above it and calculate the error
+            if (diff > 0)
+                //when the closest octave is 8, some arrays are out of range -FIX
+                above = notes.get(noteArr.get((noteIndex + 1) % 12)).get(closestOctave);
+                //if the difference is negative, get the note below it and calculate the error
+            else above = notes.get(noteArr.get((noteIndex - 1) % 12)).get(closestOctave);
+            double error = (diff / (below - above));
+            return new Note(closestNote, closestOctave, Math.abs(error));
         }
 
     }
 
     //save the current given onset and analyze it
-    public void consumeOnset(Onset onset){
+    public void consumeOnset(Onset onset) {
         this.performanceOnsets.add(onset);
     }
 
     //save the current given pitch and analyze it
-    public void consumePitch(Pitch pitch){
-        if(pitch.getPitch() != -1)
-            Log.d("NOTE",this.getNoteFromHz(pitch.getPitch()).toString());
+    public void consumePitch(Pitch pitch) {
+        boolean correct = false;
+        //if(pitch.getPitch() != -1)
+        // Log.d("PITCH",""+ pitch.getPitch() + " TIME : " + pitch.getStart());
         this.performancePitches.add(pitch);
+        for (int i = currentOffset; i < sourcePitches.size(); i++) {
+            Pitch sourcePitch = sourcePitches.get(i);
+            Note given = getNoteFromHz(pitch.getPitch());
+            Note source = getNoteFromHz(sourcePitch.getPitch());
+            if (given.equals(source) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 1)) {
+                currentOffset = i;
+                correct = true;
+                Log.d("CORRECT", "");
+                break;
+            }
 
+        }
+        if (!correct) {
+            mistakes++;
+        }
     }
 
     private File loadFileToStorage(InputStream input, String name) throws IOException {
@@ -131,20 +150,26 @@ public class Grader {
         return null;
     }
 
-    public void printSourcePitches(){
-        if(this.sourcePitches != null){
-            for(Pitch p : sourcePitches){
-                Log.d("SOURCES",p.toString());
+    public void printSourcePitches() {
+        if (this.sourcePitches != null) {
+            for (Pitch p : sourcePitches) {
+                Log.d("SOURCES", p.toString());
             }
         }
     }
 
-    public void printSourceOnsets(){
-        if(this.sourceOnsets != null){
-            for(Onset o : sourceOnsets){
-                Log.d("SOURCES",o.toString());
+    public void printSourceOnsets() {
+        if (this.sourceOnsets != null) {
+            for (Onset o : sourceOnsets) {
+                Log.d("SOURCES", o.toString());
 
             }
         }
+    }
+
+    public double getGrade() {
+        double mistakePercent = (mistakes / performancePitches.size());
+        Log.d("GRADE", "" + mistakes + " " + performancePitches.size());
+        return 100 - (100 * mistakePercent);
     }
 }

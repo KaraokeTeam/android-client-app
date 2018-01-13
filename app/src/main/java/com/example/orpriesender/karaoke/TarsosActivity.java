@@ -74,12 +74,12 @@ public class TarsosActivity extends Activity {
             }
         };
 
-
+        final AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(44100, 2048, 1024);
         Button b = findViewById(R.id.start_pitch);
         b.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                AudioDispatcher dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(44100, 2048, 1024);
+
 
                 AudioProcessor pitchProcessor = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 44100, 2048, pitchDetectionHandler);
 
@@ -92,6 +92,15 @@ public class TarsosActivity extends Activity {
 
                 Thread audioThread = new Thread(dispatcher, "Audio Thread");
                 audioThread.start();
+            }
+        });
+
+        Button stop = findViewById(R.id.stop);
+        stop.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dispatcher.stop();
+                Log.d("GRADE",""+ grader.getGrade());
             }
         });
 

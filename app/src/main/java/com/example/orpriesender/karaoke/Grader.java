@@ -226,7 +226,7 @@ public class Grader {
                 e.printStackTrace();
             }
         }
-        double mistakePercent = (mistakes / performancePitches.size());
+        double mistakePercent = (((double) mistakes) /((double) performancePitches.size()));
         return 100 - (100 * mistakePercent);
     }
 }

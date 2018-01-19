@@ -1,7 +1,14 @@
 package com.example.orpriesender.karaoke;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Or Priesender on 12-Jan-18.
@@ -56,4 +63,7 @@ public class Note {
             return true;
         return false;
     }
+
+
+
 }

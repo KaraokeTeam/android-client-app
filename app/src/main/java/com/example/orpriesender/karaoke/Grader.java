@@ -29,32 +29,29 @@ public class Grader {
 
     private List<Pitch> sourcePitches;
     private List<Onset> sourceOnsets;
-
     private List<Pitch> performancePitches;
     private List<Onset> performanceOnsets;
-
+    //the application context
     private Context context;
-
+    //notes table
     private Map<String, List<Double>> notes;
+    //offset to start from in each consume
     private int currentOffset;
+    //number of current mistakes
     private int mistakes;
+    //queue to put all pitches in - then consume them from a different thread
     private ArrayBlockingQueue<Pitch> queue;
+    //flag to keep the thread running
     private boolean keepGoing;
-
+    //the thread
     private Thread thread;
 
     public Grader(Context context, String sourcePitchFile, String sourceOnsetFile) {
-        //extracts the file from the assets folder and gives it to the pitch and onset readers
-        this.currentOffset = 0;
-        this.performanceOnsets = new LinkedList<>();
-        this.performancePitches = new LinkedList<>();
         this.context = context;
-        this.mistakes = 0;
-        queue = new ArrayBlockingQueue<Pitch>(20);
-        this.keepGoing  = true;
+        this.init();
         try {
-
             this.notes = getNotesMapFromJson();
+            //extracts the file from the assets folder and gives it to the pitch and onset readers
             this.sourcePitches = PitchReader.readPitchesFromFile(loadFileToStorage(context.getAssets().open(sourcePitchFile), "sourcePitch"));
             this.sourceOnsets = OnsetReader.readOnsetsFromFile(loadFileToStorage(context.getAssets().open(sourceOnsetFile), "sourceOnset"));
             this.getNotesMapFromJson();
@@ -62,6 +59,14 @@ public class Grader {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private void init(){
+        this.currentOffset = 0;
+        this.performanceOnsets = new LinkedList<>();
+        this.performancePitches = new LinkedList<>();
+        this.mistakes = 0;
+        this.keepGoing  = true;
     }
 
     private Map<String, List<Double>> getNotesMapFromJson() throws IOException {
@@ -77,13 +82,11 @@ public class Grader {
         int noteIndex = -1;
         int closestOctave = -1;
         double diff = 9999;
-        double signedDiff = 0;
         for (String s : notes.keySet()) {
             List<Double> octaves = notes.get(s);
             for (int i = 0; i < octaves.size(); i++) {
                 if (diff > Math.abs(pitch - octaves.get(i))) {
                     diff = Math.abs(pitch - octaves.get(i));
-                    signedDiff = pitch - octaves.get(i);
                     closestNote = s;
                     closestOctave = i;
                     noteIndex = noteArr.indexOf(s);
@@ -94,23 +97,27 @@ public class Grader {
         //if the pitch is right on the note return
         if (diff == 0)
             return new Note(closestNote, closestOctave, diff);
-            //if the difference is positive, get the note above it and calculate the error
         else {
             double below = notes.get(noteArr.get(noteIndex)).get(closestOctave);
             double above;
-            //if the difference is positive, get the note above it and calculate the error
-            if (diff > 0)
-                //when the closest octave is 8, some arrays are out of range -FIX
-                above = notes.get(noteArr.get((noteIndex + 1) % 12)).get(closestOctave);
-                //if the difference is negative, get the note below it and calculate the error
-            else above = notes.get(noteArr.get((noteIndex - 1) % 12)).get(closestOctave);
+            //if the difference is positive, get the note above
+            if (diff > 0){
+                above = notes.get(noteArr.get((noteIndex + 1) % 12)).get(closestOctave % 8);
+            }
+            //if the difference is negative, get the note below
+            else {
+                above = notes.get(noteArr.get((noteIndex - 1) % 12)).get(closestOctave % 8);
+            }
             double error = (diff / (below - above));
-            return new Note(closestNote, closestOctave, Math.abs(error));
+            return new Note(closestNote, closestOctave, error);
         }
 
     }
 
     public void start(){
+        this.init();
+        queue = new ArrayBlockingQueue<>(20);
+        this.keepGoing = true;
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -134,7 +141,8 @@ public class Grader {
     public void stop(){
         try {
             keepGoing = false;
-            thread.join();
+            if(thread != null)
+                thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -158,7 +166,6 @@ public class Grader {
 
     //save the current given pitch and analyze it
     public void consumePitch(Pitch pitch) {
-        Log.d("PITCH","consuming");
         boolean correct = false;
         if(pitch.getPitch() == -1)
             return;
@@ -219,13 +226,6 @@ public class Grader {
 
     public double getGrade() {
         this.stop();
-        if(thread != null){
-            try {
-                thread.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
         double mistakePercent = (((double) mistakes) /((double) performancePitches.size()));
         return 100 - (100 * mistakePercent);
     }

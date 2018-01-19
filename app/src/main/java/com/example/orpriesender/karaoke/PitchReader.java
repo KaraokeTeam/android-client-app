@@ -36,7 +36,7 @@ public class PitchReader {
 
     private static Pitch pitchFromLine(String line){
         String[] seperated = line.split(",");
-        return new Pitch(Float.parseFloat(seperated[0]),Float.parseFloat(seperated[1]),Float.parseFloat(seperated[2]));
+        return new Pitch(Float.parseFloat(seperated[1]),Float.parseFloat(seperated[0]),Float.parseFloat(seperated[2]));
     }
 }
 

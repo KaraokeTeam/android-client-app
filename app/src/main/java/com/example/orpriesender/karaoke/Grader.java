@@ -160,17 +160,16 @@ public class Grader {
     public void consumePitch(Pitch pitch) {
         Log.d("PITCH","consuming");
         boolean correct = false;
-        //if(pitch.getPitch() != -1)
-        Log.d("PITCH : ",pitch.toString());
+        if(pitch.getPitch() == -1)
+            return;
         this.performancePitches.add(pitch);
         for (int i = currentOffset; i < sourcePitches.size(); i++) {
             Pitch sourcePitch = sourcePitches.get(i);
             Note given = getNoteFromHz(pitch.getPitch());
             Note source = getNoteFromHz(sourcePitch.getPitch());
-            if (given.equals(source) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 1)) {
+            if (given.equals(source) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 0.1)) {
                 currentOffset = i;
                 correct = true;
-                Log.d("CORRECT", "");
                 break;
             }
 
@@ -228,7 +227,6 @@ public class Grader {
             }
         }
         double mistakePercent = (mistakes / performancePitches.size());
-        Log.d("GRADE", "mistakes : " + mistakes + " performance size : " + performancePitches.size() + " mistakes precent : " + mistakePercent);
         return 100 - (100 * mistakePercent);
     }
 }

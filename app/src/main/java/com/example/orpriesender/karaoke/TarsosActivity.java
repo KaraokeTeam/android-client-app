@@ -101,7 +101,8 @@ public class TarsosActivity extends Activity {
             public void onClick(View v) {
                 if(!dispatcher.isStopped())
                     dispatcher.stop();
-                grader.getGrade();
+               double grade =  grader.getGrade();
+               Log.d("GRADE",""+grade);
             }
         });
 

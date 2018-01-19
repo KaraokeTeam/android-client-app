@@ -52,7 +52,7 @@ public class TarsosActivity extends Activity {
                     public void run() {
 
                         if(res.getPitch() != -1){
-                            grader.consumePitch(new Pitch(pitchInHz,new Float(e.getTimeStamp()),new Float(e.getEndTimeStamp()),res.getProbability()));
+                            grader.insertPitch(new Pitch(pitchInHz,new Float(e.getTimeStamp()),new Float(e.getEndTimeStamp()),res.getProbability()));
                             pitchText.setText("" + res.getPitch());
                             noteText.setText(grader.getNoteFromHz(res.getPitch()).toString());
                         } else {
@@ -70,7 +70,7 @@ public class TarsosActivity extends Activity {
             @Override
             public void handleOnset(double time, double silence) {
                 //silence not used because aubio doesnt have it
-                grader.consumeOnset(new Onset(new Float(time)));
+               // grader.consumeOnset(new Onset(new Float(time)));
             }
         };
 
@@ -80,7 +80,7 @@ public class TarsosActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-
+                grader.start();
                 AudioProcessor pitchProcessor = new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 44100, 2048, pitchDetectionHandler);
 
                 ComplexOnsetDetector onSetDetector = new ComplexOnsetDetector(2048);
@@ -99,8 +99,9 @@ public class TarsosActivity extends Activity {
         stop.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                dispatcher.stop();
-                Log.d("GRADE",""+ grader.getGrade());
+                if(!dispatcher.isStopped())
+                    dispatcher.stop();
+                grader.getGrade();
             }
         });
 

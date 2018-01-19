@@ -1,22 +1,25 @@
 package com.example.orpriesender.karaoke;
 
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.util.Log;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Queue;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingDeque;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by aboud on 1/10/2018.
@@ -35,6 +38,10 @@ public class Grader {
     private Map<String, List<Double>> notes;
     private int currentOffset;
     private int mistakes;
+    private ArrayBlockingQueue<Pitch> queue;
+    private boolean keepGoing;
+
+    private Thread thread;
 
     public Grader(Context context, String sourcePitchFile, String sourceOnsetFile) {
         //extracts the file from the assets folder and gives it to the pitch and onset readers
@@ -43,6 +50,8 @@ public class Grader {
         this.performancePitches = new LinkedList<>();
         this.context = context;
         this.mistakes = 0;
+        queue = new ArrayBlockingQueue<Pitch>(20);
+        this.keepGoing  = true;
         try {
 
             this.notes = getNotesMapFromJson();
@@ -101,6 +110,47 @@ public class Grader {
 
     }
 
+    public void start(){
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(keepGoing || !queue.isEmpty()){
+                    try {
+                        Pitch p = queue.poll(1,TimeUnit.SECONDS);
+                        if(p != null){
+                            consumePitch(p);
+                        }
+
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                }
+
+        });
+        thread.start();
+    }
+
+    public void stop(){
+        try {
+            keepGoing = false;
+            thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public void insertPitch(Pitch p){
+        if(p != null){
+            try {
+                queue.put(p);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     //save the current given onset and analyze it
     public void consumeOnset(Onset onset) {
         this.performanceOnsets.add(onset);
@@ -108,9 +158,10 @@ public class Grader {
 
     //save the current given pitch and analyze it
     public void consumePitch(Pitch pitch) {
+        Log.d("PITCH","consuming");
         boolean correct = false;
         //if(pitch.getPitch() != -1)
-        // Log.d("PITCH",""+ pitch.getPitch() + " TIME : " + pitch.getStart());
+        Log.d("PITCH : ",pitch.toString());
         this.performancePitches.add(pitch);
         for (int i = currentOffset; i < sourcePitches.size(); i++) {
             Pitch sourcePitch = sourcePitches.get(i);
@@ -168,8 +219,16 @@ public class Grader {
     }
 
     public double getGrade() {
+        this.stop();
+        if(thread != null){
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
         double mistakePercent = (mistakes / performancePitches.size());
-        Log.d("GRADE", "" + mistakes + " " + performancePitches.size());
+        Log.d("GRADE", "mistakes : " + mistakes + " performance size : " + performancePitches.size() + " mistakes precent : " + mistakePercent);
         return 100 - (100 * mistakePercent);
     }
 }

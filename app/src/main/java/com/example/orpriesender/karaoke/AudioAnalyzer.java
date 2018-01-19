@@ -7,6 +7,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.nio.ByteOrder;
 import java.util.Random;
 
 import be.tarsos.dsp.AudioDispatcher;
@@ -44,7 +45,13 @@ public class AudioAnalyzer {
             if (recordFile != null) {
                 if(recordFile.exists())
                     recordFile.delete();
-                TarsosDSPAudioFormat format = dispatcher.getFormat();
+                TarsosDSPAudioFormat format = new TarsosDSPAudioFormat(TarsosDSPAudioFormat.Encoding.PCM_SIGNED,
+                        44100,
+                        16,
+                        1,
+                        2 * 1,
+                        44100,
+                       false);
                 try {
                     RandomAccessFile raf = new RandomAccessFile(recordFile, "rw");
                     AudioProcessor recorder = new WriterProcessor(format, raf);

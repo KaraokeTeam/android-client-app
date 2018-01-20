@@ -26,12 +26,12 @@ import be.tarsos.dsp.writer.WriterProcessor;
 
 public class AudioAnalyzer {
 
-    AudioDispatcher dispatcher;
-    PitchDetectionHandler pitchHandler;
-    OnsetHandler onsetHandler;
-    File recordFile;
-    boolean initialized, stopped;
-    Thread audioThread;
+    private AudioDispatcher dispatcher;
+    private PitchDetectionHandler pitchHandler;
+    private OnsetHandler onsetHandler;
+    private File recordFile;
+    private boolean initialized, stopped;
+    private Thread audioThread;
 
     public AudioAnalyzer() {
         initialized = false;
@@ -68,7 +68,6 @@ public class AudioAnalyzer {
                 onSetDetector.setHandler(onsetHandler);
                 this.dispatcher.addAudioProcessor(onSetDetector);
             }
-
         }
     }
 

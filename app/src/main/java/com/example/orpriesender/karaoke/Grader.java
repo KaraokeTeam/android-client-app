@@ -179,7 +179,6 @@ public class Grader {
                 correct = true;
                 break;
             }
-
         }
         if (!correct) {
             mistakes++;

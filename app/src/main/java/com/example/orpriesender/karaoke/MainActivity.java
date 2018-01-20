@@ -49,9 +49,6 @@ public class MainActivity extends Activity {
     private static final int STORAGE_PERMISSION = 222;
     private static final int RECORD_PERMISSION = 333;
 
-
-
-
     @Override
     protected void onResume() {
         super.onResume();
@@ -66,8 +63,14 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-       // FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-       // ModelFirebase.getInstance().addUser(new User(user));
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        User newUser = new User(user);
+        ModelFirebase.getInstance().addUser(newUser);
+
+        for(int i =0;i < 10; i++){
+            ModelFirebase.getInstance().addPost(new Post(newUser.getId(),newUser.getUsername(),"bla bla","song name","songUrl"));
+        }
+
         setContentView(R.layout.activity_main);
         record_button = (Button) findViewById(R.id.record);
         stop_button = (Button) findViewById(R.id.stop);

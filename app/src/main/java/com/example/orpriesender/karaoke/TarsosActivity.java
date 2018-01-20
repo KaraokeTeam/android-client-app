@@ -59,6 +59,7 @@ public class TarsosActivity extends Activity {
         final OnsetHandler onsetHandler = new OnsetHandler() {
             @Override
             public void handleOnset(double time, double silence) {
+                System.out.println("ONSET : " + time);
                 grader.consumeOnset(new Onset(new Float(time)));
             }
         };

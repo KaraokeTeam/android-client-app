@@ -5,7 +5,6 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -48,8 +47,10 @@ public class ModelFirebase {
     }
 
     public void addPost(Post post){
-        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("posts").child(post.getId());
-        ref.setValue(post);
+        String postId = FirebaseDatabase.getInstance().getReference("posts").push().getKey();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("posts");
+        ref.child(postId).setValue(post.toMap());
+
     }
 
     public void getPost(String id,final GetPostCallback callback){
@@ -87,7 +88,6 @@ public class ModelFirebase {
             }
         });
     }
-
 
     interface GetUserCallBack {
         void onComplete(User user);

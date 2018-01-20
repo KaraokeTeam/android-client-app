@@ -38,7 +38,7 @@ public class Grader {
     //offset to start from in each consume
     private int currentOffset;
     //number of current mistakes
-    private int mistakes;
+    private double mistakes;
     //queue to put all pitches in - then consume them from a different thread
     private ArrayBlockingQueue<Pitch> queue;
     //flag to keep the thread running
@@ -167,6 +167,7 @@ public class Grader {
     //save the current given pitch and analyze it
     public void consumePitch(Pitch pitch) {
         boolean correct = false;
+        boolean halfCorrect=false;
         if(pitch.getPitch() == -1)
             return;
         this.performancePitches.add(pitch);
@@ -179,10 +180,21 @@ public class Grader {
                 correct = true;
                 break;
             }
+            else if((given.distance(source)==1||given.distance(source)==11) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 0.2))
+            {
+             halfCorrect=true;
+            }
 
         }
         if (!correct) {
-            mistakes++;
+            if(halfCorrect)
+            {
+                mistakes+=0.5;
+            }
+            else
+            {
+                mistakes++;
+            }
         }
     }
 
@@ -226,7 +238,7 @@ public class Grader {
 
     public double getGrade() {
         this.stop();
-        double mistakePercent = (((double) mistakes) /((double) performancePitches.size()));
+        double mistakePercent = ( mistakes /((double) performancePitches.size()));
         return 100 - (100 * mistakePercent);
     }
 }

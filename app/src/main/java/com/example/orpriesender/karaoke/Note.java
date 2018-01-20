@@ -64,6 +64,10 @@ public class Note {
         return false;
     }
 
-
+    public int distance(Note note)
+    {
+        List<String> noteArr = Arrays.asList("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
+        return Math.abs(noteArr.indexOf(this.getNote())-noteArr.indexOf(note.getNote()));
+    }
 
 }

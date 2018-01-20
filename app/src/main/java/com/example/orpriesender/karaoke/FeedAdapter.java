@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 
@@ -41,19 +42,46 @@ public class FeedAdapter extends BaseAdapter {
         return id;
     }
 
+    public void setPosts(List<Post> posts){
+        this.posts = posts;
+    }
+
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(final int position, View convertView, ViewGroup parent) {
         //if this list item is empty - inflate it
-        if(convertView == null)
+        if(convertView == null){
             convertView = inflater.inflate(R.layout.feed_item_layout,null);
+        }
+
 
         //ImageView image = (ImageView) convertView.findViewById(R.id.user_image);
         TextView username = (TextView) convertView.findViewById(R.id.username);
         TextView description = (TextView) convertView.findViewById(R.id.description);
-        //TextView time = (TextView) convertView.findViewById(R.id.time);
+        TextView time = (TextView) convertView.findViewById(R.id.time);
+        SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.seek_bar);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                posts.get(position).setAudioPosition(progress);
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         convertView.setTag(position);
+
+
         username.setText(posts.get(position).getUsername());
         description.setText(posts.get(position).getDescription());
+        time.setText(posts.get(position).getTime());
+        seekBar.setProgress(posts.get(position).getAudioPosition());
 
         return convertView;
     }

@@ -231,7 +231,6 @@ public class Grader {
         if (this.sourceOnsets != null) {
             for (Onset o : sourceOnsets) {
                 Log.d("SOURCES", o.toString());
-
             }
         }
     }

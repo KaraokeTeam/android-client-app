@@ -41,17 +41,17 @@ public class AudioAnalyzer {
     public void init() {
         if (!initialized) {
             initialized = true;
-            this.dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(44100, 2048, 1024);
+            this.dispatcher = AudioDispatcherFactory.fromDefaultMicrophone(44100, 2048, 0);
             if (recordFile != null) {
                 if(recordFile.exists())
                     recordFile.delete();
                 TarsosDSPAudioFormat format = new TarsosDSPAudioFormat(TarsosDSPAudioFormat.Encoding.PCM_SIGNED,
                         44100,
-                        16,
+                        2 * 8,
                         1,
                         2 * 1,
                         44100,
-                       false);
+                        ByteOrder.BIG_ENDIAN.equals(ByteOrder.nativeOrder()));
                 try {
                     RandomAccessFile raf = new RandomAccessFile(recordFile, "rw");
                     AudioProcessor recorder = new WriterProcessor(format, raf);
@@ -81,11 +81,11 @@ public class AudioAnalyzer {
 
     public void setRecordFile(String filename) {
         recordFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), filename + ".wav");
-        System.out.println("filename : " + recordFile.getName());
         if (recordFile.exists()) {
             recordFile.delete();
         }
     }
+
 
     public void start() {
         if (!stopped)

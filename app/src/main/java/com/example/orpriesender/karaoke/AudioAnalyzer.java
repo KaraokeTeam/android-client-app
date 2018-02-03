@@ -79,6 +79,7 @@ public class AudioAnalyzer {
         this.onsetHandler = handler;
     }
 
+    //EXTERNAL STORAGE - CHANGE ?
     public void setRecordFile(String filename) {
         recordFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), filename + ".wav");
         if (recordFile.exists()) {

@@ -30,7 +30,7 @@ public class ModelFirebase {
         ref.setValue(user);
     }
 
-    public void getUser(String id, final GetUserCallBack callBack){
+    public void getUser(String id, final FirebaseCallback<User> callBack){
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users");
         ref.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -53,7 +53,7 @@ public class ModelFirebase {
 
     }
 
-    public void getPost(String id,final GetPostCallback callback){
+    public void getPost(String id,final FirebaseCallback<Post> callback){
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("posts");
         ref.child(id).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -69,7 +69,7 @@ public class ModelFirebase {
         });
     }
 
-    void getAllPosts(final GetAllPostsCallback callback){
+    void getAllPosts(final FirebaseCallback<List<Post>> callback){
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("posts");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
@@ -89,18 +89,8 @@ public class ModelFirebase {
         });
     }
 
-    interface GetUserCallBack {
-        void onComplete(User user);
-        void onCancel();
-    }
-
-    interface GetPostCallback {
-        void onComplete(Post post);
-        void onCancel();
-    }
-
-    interface GetAllPostsCallback{
-        void onComplete(List<Post> posts);
+    interface FirebaseCallback<T>{
+        void onComplete(T t);
         void onCancel();
     }
 }

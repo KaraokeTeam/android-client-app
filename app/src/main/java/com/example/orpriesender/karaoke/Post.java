@@ -1,5 +1,6 @@
 package com.example.orpriesender.karaoke;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.util.Calendar;
@@ -11,7 +12,7 @@ import java.util.Map;
  * Created by Or Priesender on 05-Jan-18.
  */
 
-public class Post {
+public class Post implements Serializable{
     private String id;
     private String userId;
     private String username;

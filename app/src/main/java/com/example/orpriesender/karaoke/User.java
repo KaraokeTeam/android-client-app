@@ -15,11 +15,17 @@ public class User {
     private String username;
     private Uri imageUrl;
     private List<Integer> posts;
+    private int rating;
 
     public User(FirebaseUser user){
         this.id = user.getUid();
         this.username = user.getDisplayName();
         this.imageUrl = user.getPhotoUrl();
+        this.rating = 0;
+    }
+
+    public User(){
+
     }
 
     public String getId() {
@@ -52,5 +58,13 @@ public class User {
 
     public void setPosts(List<Integer> posts) {
         this.posts = posts;
+    }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
     }
 }

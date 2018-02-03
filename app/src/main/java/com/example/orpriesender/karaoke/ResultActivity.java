@@ -28,17 +28,21 @@ public class ResultActivity extends Activity {
         super.onCreate(savedInstanceState);
         //set the layout
         setContentView(R.layout.activity_result);
+
         //get the information from the previous activity
         Intent intent = getIntent();
         outputFile = intent.getStringExtra("outputFile");
         result = intent.getIntExtra("grade", 0);
+
         //set the text according to the information received
         result_number = findViewById(R.id.result_number);
         result_number.setText(String.valueOf(result));
+
         //configure the play button
         play = findViewById(R.id.play);
         play.setEnabled(true);
         play.setBackgroundColor(getResources().getColor(R.color.fui_transparent));
+
         //configure the audio player
         try {
             player = new MediaPlayer();

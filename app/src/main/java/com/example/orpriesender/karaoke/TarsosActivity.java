@@ -51,7 +51,7 @@ public class TarsosActivity extends Activity {
 
 
         //create a grader with relevant sources
-        grader = new Grader(getApplicationContext(), "jinjit3");
+        grader = new Grader(getApplicationContext(), "zlil");
 
         //set a pitch handler
         final PitchDetectionHandler pitchDetectionHandler = new PitchDetectionHandler() {

@@ -129,7 +129,7 @@ public class FirebaseStorageManager {
     }
 
     void getGroupsForSong(String songName, final FireBaseStorageDownloadCallback callback){
-        StorageReference ref = FirebaseStorage.getInstance().getReference().child("groups/" + songName);
+        StorageReference ref = FirebaseStorage.getInstance().getReference().child("groups/" + songName + ".json");
         try{
             final File localFile = File.createTempFile(songName + "Groups",".json");
             localFile.deleteOnExit();

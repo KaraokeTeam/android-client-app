@@ -22,8 +22,13 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by aboud on 1/10/2018.
@@ -51,12 +56,19 @@ public class Grader {
     private Thread thread;
     private boolean errorMode = false;
     private String songName;
-
     private List<Group> groups;
+
+    private Lock lock;
+    private Condition condition;
+
 
     public Grader(Context context, String songName) {
         this.context = context;
         this.songName = songName;
+
+        this.lock = new ReentrantLock();
+        this.condition = lock.newCondition();
+
         try {
             this.notes = getNotesMapFromJson();
 
@@ -75,32 +87,31 @@ public class Grader {
         this.performancePitches = new LinkedList<>();
         this.mistakes = 0;
         this.keepGoing  = true;
+        this.lock.lock();
 
         FirebaseStorageManager.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot task,File localFile) {
                 sourceOnsets = OnsetReader.readOnsetsFromFile(localFile);
-                notify();
-            }
+                condition.signal();            }
 
             @Override
             public void onFailure(Exception e) {
                 errorMode = true;
-                notify();
-            }
+                condition.signal();            }
         });
 
         FirebaseStorageManager.getInstance().getSourcePitchFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
                 sourcePitches = PitchReader.readPitchesFromFile(localFile);
-                notify();
+                condition.signal();
             }
 
             @Override
             public void onFailure(Exception e) {
                 errorMode = true;
-                notify();
+                condition.signal();
             }
         });
 
@@ -108,20 +119,24 @@ public class Grader {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
                 groups = GroupReader.readGroupsFromFile(localFile);
-                notify();
+                condition.signal();
             }
 
             @Override
             public void onFailure(Exception e) {
                 e.printStackTrace();
-                notify();
+                condition.signal();
                 // TODO : exit application or something
             }
         });
 
         while((sourcePitches == null || sourceOnsets == null) || errorMode){
             try {
-                wait(2000);
+                condition.await();
+                lock.unlock();
+                for (Group g : groups){
+                    System.out.println(g);
+                }
                 if(errorMode)
                     return false;
             } catch (InterruptedException e) {

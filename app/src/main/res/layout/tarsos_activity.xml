@@ -6,8 +6,24 @@
     android:layout_height="match_parent"
     android:background="@drawable/blue">
 
+
+    <VideoView
+        android:id="@+id/tarsos_activity_video"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:alpha="0"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/tarsos_activity_note_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tarsos_activity_song_name" />
+
     <TextView
-        android:id="@+id/song_name"
+        android:id="@+id/tarsos_activity_song_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -20,20 +36,21 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/pitch_text"
+        android:id="@+id/tarsos_activity_pitch_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:text="Pitch : 0.00"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/note_text" />
+        app:layout_constraintBottom_toTopOf="@+id/tarsos_activity_stop"
+        app:layout_constraintEnd_toEndOf="@+id/tarsos_activity_start_button"
+        app:layout_constraintStart_toStartOf="@+id/tarsos_activity_start_button" />
+
 
     <ImageButton
-        android:id="@+id/back_button"
+        android:id="@+id/tarsos_activity_back_button"
         style="?android:attr/borderlessButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -42,21 +59,21 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/note_text"
+        android:id="@+id/tarsos_activity_note_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:text="Note : A0"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/start_pitch" />
+        app:layout_constraintBottom_toTopOf="@+id/tarsos_activity_pitch_text"
+        app:layout_constraintEnd_toEndOf="@+id/tarsos_activity_start_button"
+        app:layout_constraintStart_toStartOf="@+id/tarsos_activity_start_button" />
 
 
     <ImageButton
-        android:id="@+id/start_pitch"
+        android:id="@+id/tarsos_activity_start_button"
         style="?android:attr/borderlessButtonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -65,41 +82,37 @@
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:src="@drawable/mic_circle"
-        app:layout_constraintBottom_toTopOf="@+id/stop"
+        android:visibility="visible"
+        app:layout_constraintBottom_toTopOf="@+id/tarsos_activity_note_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.502" />
 
     <Button
-        android:id="@+id/stop"
+        android:id="@+id/tarsos_activity_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:text="stop"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/pitch_text" />
+        app:layout_constraintEnd_toEndOf="@+id/tarsos_activity_start_button"
+        app:layout_constraintStart_toStartOf="@+id/tarsos_activity_start_button" />
 
     <TextView
-        android:id="@+id/countdown_text"
+        android:id="@+id/tarsos_activity_countdown_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:text="4"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         android:textSize="100sp"
         android:visibility="gone"
-        app:layout_constraintBottom_toTopOf="@+id/start_pitch"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 
 

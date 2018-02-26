@@ -22,7 +22,7 @@
             android:layout_weight="0">
 
             <ImageButton
-                android:id="@+id/back_button"
+                android:id="@+id/tarsos_activity_back_button"
                 style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -59,7 +59,7 @@
                 app:layout_constraintEnd_toStartOf="@+id/userprofile_username"
                 app:layout_constraintHorizontal_chainStyle="packed"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/back_button"
+                app:layout_constraintTop_toBottomOf="@+id/tarsos_activity_back_button"
                 app:srcCompat="@drawable/default_profile_pic" />
 
             <TextView

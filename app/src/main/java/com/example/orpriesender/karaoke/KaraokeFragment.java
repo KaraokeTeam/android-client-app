@@ -26,7 +26,7 @@ public class KaraokeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        videoView = getView().findViewById(R.id.video);
+        videoView = getView().findViewById(R.id.tarsos_activity_video);
         videoView.setVideoPath("android.resource://com.example.orpriesender.karaoke/raw/videofilenamewithoutextension");
         videoView.start();
     }

@@ -4,6 +4,9 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.firebase.storage.FileDownloadTask;
+import com.google.firebase.storage.UploadTask;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -19,6 +22,7 @@ import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingDeque;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -27,8 +31,8 @@ import java.util.concurrent.TimeUnit;
 
 public class Grader {
 
-    private List<Pitch> sourcePitches;
-    private List<Onset> sourceOnsets;
+    private List<Pitch> sourcePitches = null;
+    private List<Onset> sourceOnsets = null;
     private List<Pitch> performancePitches;
     private List<Onset> performanceOnsets;
     //the application context
@@ -45,28 +49,86 @@ public class Grader {
     private boolean keepGoing;
     //the thread
     private Thread thread;
+    private boolean errorMode = false;
+    private String songName;
 
-    public Grader(Context context, String sourcePitchFile, String sourceOnsetFile) {
+    private List<Group> groups;
+
+    public Grader(Context context, String songName) {
         this.context = context;
-        this.init();
+        this.songName = songName;
         try {
             this.notes = getNotesMapFromJson();
+
             //extracts the file from the assets folder and gives it to the pitch and onset readers
-            this.sourcePitches = PitchReader.readPitchesFromFile(loadFileToStorage(context.getAssets().open(sourcePitchFile), "sourcePitch"));
-            this.sourceOnsets = OnsetReader.readOnsetsFromFile(loadFileToStorage(context.getAssets().open(sourceOnsetFile), "sourceOnset"));
-            this.getNotesMapFromJson();
+            //this.sourcePitches = PitchReader.readPitchesFromFile(loadFileToStorage(context.getAssets().open(sourcePitchFile), "sourcePitch"));
+            //this.sourceOnsets = OnsetReader.readOnsetsFromFile(loadFileToStorage(context.getAssets().open(sourceOnsetFile), "sourceOnset"));
 
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void init(){
+    public boolean init(){
         this.currentOffset = 0;
         this.performanceOnsets = new LinkedList<>();
         this.performancePitches = new LinkedList<>();
         this.mistakes = 0;
         this.keepGoing  = true;
+
+        FirebaseStorageManager.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot task,File localFile) {
+                sourceOnsets = OnsetReader.readOnsetsFromFile(localFile);
+                notify();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                errorMode = true;
+                notify();
+            }
+        });
+
+        FirebaseStorageManager.getInstance().getSourcePitchFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+                sourcePitches = PitchReader.readPitchesFromFile(localFile);
+                notify();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                errorMode = true;
+                notify();
+            }
+        });
+
+        FirebaseStorageManager.getInstance().getGroupsForSong(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+                groups = GroupReader.readGroupsFromFile(localFile);
+                notify();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                e.printStackTrace();
+                notify();
+                // TODO : exit application or something
+            }
+        });
+
+        while((sourcePitches == null || sourceOnsets == null) || errorMode){
+            try {
+                wait(2000);
+                if(errorMode)
+                    return false;
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        return true;
     }
 
     private Map<String, List<Double>> getNotesMapFromJson() throws IOException {
@@ -127,7 +189,6 @@ public class Grader {
                         if(p != null){
                             consumePitch(p);
                         }
-
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -237,7 +298,10 @@ public class Grader {
 
     public double getGrade() {
         this.stop();
-        double mistakePercent = ( mistakes /((double) performancePitches.size()));
+        if(performancePitches.size() == 0){
+            return 0;
+        }
+        double mistakePercent = ( (double) mistakes /((double) performancePitches.size()));
         return 100 - (100 * mistakePercent);
     }
 }

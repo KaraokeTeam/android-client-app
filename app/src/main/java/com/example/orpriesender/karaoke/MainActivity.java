@@ -24,14 +24,6 @@ import com.google.firebase.auth.FirebaseUser;
 
 import java.io.IOException;
 
-import be.tarsos.dsp.AudioDispatcher;
-import be.tarsos.dsp.AudioEvent;
-import be.tarsos.dsp.AudioProcessor;
-import be.tarsos.dsp.io.android.AudioDispatcherFactory;
-import be.tarsos.dsp.pitch.PitchDetectionHandler;
-import be.tarsos.dsp.pitch.PitchDetectionResult;
-import be.tarsos.dsp.pitch.PitchProcessor;
-
 public class MainActivity extends Activity {
 
     private Button record_button;
@@ -73,7 +65,7 @@ public class MainActivity extends Activity {
 
         setContentView(R.layout.activity_main);
         record_button = (Button) findViewById(R.id.record);
-        stop_button = (Button) findViewById(R.id.stop);
+        stop_button = (Button) findViewById(R.id.tarsos_activity_stop);
         message = (TextView) findViewById(R.id.message);
         feed_button = (Button) findViewById(R.id.feed_button);
         stop_button.setEnabled(false);
@@ -95,7 +87,7 @@ public class MainActivity extends Activity {
                 }
 
 
-                videoView = findViewById(R.id.video);
+                videoView = findViewById(R.id.tarsos_activity_video);
                 videoView.setVideoPath("android.resource://com.example.orpriesender.karaoke/raw/zlil");
                 videoView.start();
                 //video.playVideo();

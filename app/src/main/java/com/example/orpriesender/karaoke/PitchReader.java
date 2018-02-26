@@ -18,8 +18,13 @@ import java.util.Scanner;
  */
 
 public class PitchReader {
-    public static List<Pitch> readPitchesFromFile(File file) throws FileNotFoundException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+    public static List<Pitch> readPitchesFromFile(File file){
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         List<Pitch> result = new LinkedList<>();
 
         try {

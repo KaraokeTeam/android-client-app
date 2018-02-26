@@ -15,8 +15,13 @@ import java.util.List;
 
 public class OnsetReader {
 
-    public static List<Onset> readOnsetsFromFile(File file) throws FileNotFoundException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+    public static List<Onset> readOnsetsFromFile(File file) {
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
         List<Onset> result = new LinkedList<>();
 
         try {

@@ -11,8 +11,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.firebase.auth.FirebaseAuth;
-
 import java.util.List;
 
 /**
@@ -35,7 +33,7 @@ public class UserProfileActivity extends Activity {
         rating = findViewById(R.id.userprofile_rating);
         profilePic = findViewById(R.id.userprofile_pic);
         spinner = findViewById(R.id.userprofile_spinner);
-        backButton = findViewById(R.id.back_button);
+        backButton = findViewById(R.id.tarsos_activity_back_button);
         //get the list fragment
         final PostListFragment fragment = (PostListFragment) getFragmentManager().findFragmentById(R.id.userprofile_posts_list_fragment);
         final String userId = getIntent().getStringExtra("userId");

@@ -21,12 +21,12 @@ import java.util.List;
 
 public class PostListFragment extends Fragment {
 
-    List<Post> posts;
-    FeedAdapter adapter;
-    ListView postList;
-    ProgressBar spinner;
-    TextView noItemsText;
-    onUsernameClicked listener;
+    private List<Post> posts;
+    private FeedAdapter adapter;
+    private ListView postList;
+    private ProgressBar spinner;
+    private TextView noItemsText;
+    private onUsernameClicked listener;
 
     public PostListFragment(){}
 

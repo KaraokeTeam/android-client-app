@@ -26,6 +26,10 @@ public class Note {
         this.error = error;
     }
 
+    public Note(String note){
+        this.note = note;
+    }
+
     @Override
     public String toString() {
         NumberFormat formatter = new DecimalFormat("#0.000");

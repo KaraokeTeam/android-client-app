@@ -64,7 +64,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHorizontal_bias="0.0"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/song_name" />
+                app:layout_constraintTop_toBottomOf="@+id/tarsos_activity_song_name" />
 
             <SeekBar
                 android:id="@+id/seek_bar"
@@ -93,7 +93,7 @@
                 app:srcCompat="@drawable/play" />
 
             <TextView
-                android:id="@+id/song_name"
+                android:id="@+id/tarsos_activity_song_name"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"

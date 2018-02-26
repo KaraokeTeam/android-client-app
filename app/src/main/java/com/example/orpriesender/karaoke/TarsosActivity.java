@@ -4,11 +4,13 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import be.tarsos.dsp.AudioEvent;
 import be.tarsos.dsp.onsets.OnsetHandler;
@@ -21,6 +23,8 @@ public class TarsosActivity extends Activity {
     TextView pitchText, noteText,countdownText;
     Button  stopListeningButton;
     ImageButton startListeningButton,backButton;
+    VideoView video;
+    Spinner dropdown;
     Grader grader;
     AudioAnalyzer analyzer;
     @Override
@@ -30,15 +34,24 @@ public class TarsosActivity extends Activity {
         setContentView(R.layout.tarsos_activity);
 
         //get the needed view elements from the view
-        backButton = findViewById(R.id.back_button);
-        countdownText = findViewById(R.id.countdown_text);
-        pitchText = findViewById(R.id.pitch_text);
-        noteText = findViewById(R.id.note_text);
-        startListeningButton = findViewById(R.id.start_pitch);
-        stopListeningButton = findViewById(R.id.stop);
+        //dropdown = findViewById(R.id.spinner);
+        backButton = findViewById(R.id.tarsos_activity_back_button);
+        countdownText = findViewById(R.id.tarsos_activity_countdown_text);
+        pitchText = findViewById(R.id.tarsos_activity_pitch_text);
+        noteText = findViewById(R.id.tarsos_activity_note_text);
+        startListeningButton = findViewById(R.id.tarsos_activity_start_button);
+        stopListeningButton = findViewById(R.id.tarsos_activity_stop);
+        video = findViewById(R.id.tarsos_activity_video);
+
+//        //init the drop down list
+//        String items[] = new String[]{"Eyal Golan - Zlil Meitar","Simple Do Re Mi"};
+//
+//        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this,R.layout.support_simple_spinner_dropdown_item,items);
+//        dropdown.setAdapter(spinnerAdapter);
+
 
         //create a grader with relevant sources
-        grader = new Grader(getApplicationContext(), "jinjit3_pitches.txt", "jinjit3_onsets.txt");
+        grader = new Grader(getApplicationContext(), "jinjit3");
 
         //set a pitch handler
         final PitchDetectionHandler pitchDetectionHandler = new PitchDetectionHandler() {
@@ -50,8 +63,8 @@ public class TarsosActivity extends Activity {
                     public void run() {
                         if (res.getPitch() != -1) {
                             grader.insertPitch(new Pitch(pitchInHz, new Float(e.getTimeStamp()), new Float(e.getEndTimeStamp()), res.getProbability()));
-                            pitchText.setText("" + res.getPitch());
-                            noteText.setText(grader.getNoteFromHz(res.getPitch()).getNote());
+                            pitchText.setText("Pitch: " + res.getPitch());
+                            noteText.setText("Note: " + grader.getNoteFromHz(res.getPitch()).getNote());
                         } else {
                             pitchText.setText("0.00");
                             noteText.setText("--");
@@ -80,14 +93,18 @@ public class TarsosActivity extends Activity {
         analyzer.init();
 
         //start listening
+        //activates a timer and starts listening to singer
         startListeningButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                startListeningButton.animate().alpha(0.0f).setDuration(500);
+                video.animate().alpha(1.0f).setDuration(1000);
                 CountDownTimer timer = new CountDownTimer(3000,1000) {
                     @Override
                     public void onTick(long millisUntilFinished) {
                         String nextText = "" + (Integer.parseInt(countdownText.getText().toString()) - 1);
+                        stopListeningButton.setEnabled(false);
                         countdownText.setText(nextText);
                         countdownText.setVisibility(View.VISIBLE);
                     }
@@ -96,7 +113,12 @@ public class TarsosActivity extends Activity {
                     public void onFinish() {
                         countdownText.setVisibility(View.GONE);
                         countdownText.setText("3");
-                        startListening();
+                        stopListeningButton.setEnabled(true);
+
+                        boolean isListening = startListening();
+                        if(!isListening){
+                            //TODO: quit with error, or present error and reset
+                        }
                     }
                 };
 
@@ -109,6 +131,9 @@ public class TarsosActivity extends Activity {
             @Override
             public void onClick(View v) {
             double grade = stopListening();
+                startListeningButton.animate().alpha(1.0f).setDuration(500);
+                video.animate().alpha(0.0f).setDuration(1000);
+            System.out.println("GRADE IS " + grade);
             }
         });
 
@@ -120,23 +145,26 @@ public class TarsosActivity extends Activity {
         });
     }
 
-    private void startListening(){
-        grader.start();
-        analyzer.start();
+    private boolean startListening(){
+        boolean graderAvailable = grader.init();
+        if(graderAvailable){
+            grader.start();
+            analyzer.start();
+            return true;
+        }else{
+            analyzer.start();
+            return false;
+        }
     }
 
     private double stopListening(){
         analyzer.stop();
         double grade = grader.getGrade();
-        grader.stop();
         pitchText.setText("0.00");
         noteText.setText("--");
         return grade;
     }
 
-    private void countdown(int seconds){
-
-    }
 }
 
 

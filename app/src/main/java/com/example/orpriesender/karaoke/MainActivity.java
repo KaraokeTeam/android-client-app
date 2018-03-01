@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
@@ -57,10 +58,10 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         User newUser = new User(user);
-        ModelFirebase.getInstance().addUser(newUser);
+        ModelFireBase.getInstance().addUser(newUser);
 
         for(int i =0;i < 10; i++){
-            ModelFirebase.getInstance().addPost(new Post(newUser.getId(),newUser.getUsername(),"bla bla","song name","songUrl"));
+            ModelFireBase.getInstance().addPost(new Post(newUser.getId(),newUser.getUsername(),"bla bla","song name","songUrl"));
         }
 
         setContentView(R.layout.activity_main);

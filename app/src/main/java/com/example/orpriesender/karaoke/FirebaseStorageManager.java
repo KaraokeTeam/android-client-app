@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -30,7 +29,7 @@ public class FirebaseStorageManager {
         return instance;
     }
 
-    void uploadAudioForPost(String postId, File file,final FirebaseStorageUploadCallback callback){
+    void uploadAudioForPost(String postId, File file,final FireBaseStorageUploadCallback callback){
         StorageReference instance = FirebaseStorage.getInstance().getReference("audio");
         final UploadTask task = instance.child(postId).putFile(Uri.fromFile(file));
         task.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -46,7 +45,7 @@ public class FirebaseStorageManager {
         });
     }
 
-    void uploadImageForUser(String userId,File file, final FirebaseStorageUploadCallback callback){
+    void uploadImageForUser(String userId,File file, final FireBaseStorageUploadCallback callback){
         StorageReference instance = FirebaseStorage.getInstance().getReference("images");
         final UploadTask task = instance.child(userId).putFile(Uri.fromFile(file));
         task.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -157,7 +156,7 @@ public class FirebaseStorageManager {
         void onFailure(Exception e);
     }
 
-    interface FirebaseStorageUploadCallback{
+    interface FireBaseStorageUploadCallback {
         void onSuccess(UploadTask.TaskSnapshot task);
         void onFailure(Exception e);
     }

@@ -4,7 +4,8 @@ package com.example.orpriesender.karaoke;
  * Created by Or Priesender on 26-Feb-18.
  */
 
-public class Group {
+public class Group{
+
 
     private Note note;
     private float startTime;

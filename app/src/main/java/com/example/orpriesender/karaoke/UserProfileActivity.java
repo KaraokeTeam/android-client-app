@@ -1,29 +1,31 @@
 package com.example.orpriesender.karaoke;
 
-import android.app.Activity;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.view.Gravity;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
+
 
 /**
  * Created by Or Priesender on 03-Feb-18.
  */
 
-public class UserProfileActivity extends Activity {
+public class UserProfileActivity extends FragmentActivity {
     TextView username;
     TextView rating;
     ImageView profilePic;
     ImageButton backButton;
     ProgressBar spinner;
-
+    private PostListViewModel postListVM;
+    private UserProfileViewModel userProfileVM;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,46 +37,52 @@ public class UserProfileActivity extends Activity {
         spinner = findViewById(R.id.userprofile_spinner);
         backButton = findViewById(R.id.tarsos_activity_back_button);
         //get the list fragment
-        final PostListFragment fragment = (PostListFragment) getFragmentManager().findFragmentById(R.id.userprofile_posts_list_fragment);
+        final PostListFragment fragment = (PostListFragment) getSupportFragmentManager().findFragmentById(R.id.userprofile_posts_list_fragment);
         final String userId = getIntent().getStringExtra("userId");
         spinner.setVisibility(View.VISIBLE);
-        ModelFirebase.getInstance().getUser(userId, new ModelFirebase.FirebaseCallback<User>() {
-            @Override
-            public void onComplete(User user) {
-                  username.setText(user.getUsername());
-                  rating.setText("" + user.getRating());
-                  spinner.setVisibility(View.GONE);
-                  //take image from storage and insert to profile pic
-            }
+
+//        ModelFireBase.getInstance().getUser(userId, new ModelFireBase.FirebaseCallback<User>() {
+//            @Override
+//            public void onComplete(User user) {
+//
+//                  //take image from storage and insert to profile pic
+//            }
+//
+//            @Override
+//            public void onCancel() {
+//                //present failure and exit the app
+//            }
+//        });
+
+
+        //fetching the users post list
+        postListVM = ViewModelProviders.of(this).get(PostListViewModel.class);
+        postListVM.getAllPosts().observe(this, new Observer<List<Post>>() {
 
             @Override
-            public void onCancel() {
-                //present failure and exit the app
-            }
-        });
-
-        ModelFirebase.getInstance().getAllPosts(new ModelFirebase.FirebaseCallback<List<Post>>() {
-            @Override
-            public void onComplete(List<Post> posts) {
-//                adapter.setPosts(posts);
-//                postList.setAdapter(adapter);
-//                spinner.setVisibility(View.GONE);
+            public void onChanged(@Nullable List<Post> posts) {
                 fragment.setPostsForUser(posts,userId);
             }
-
-            @Override
-            public void onCancel() {
-                //spinner.setVisibility(View.GONE);
-                Toast toast = Toast.makeText(getApplicationContext(),"Loading feed failed",Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.TOP,0,200);
-                toast.show();
-            }
         });
+
 
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 UserProfileActivity.super.onBackPressed();
+            }
+        });
+
+        UserProfileViewModelFactory factory = new UserProfileViewModelFactory(userId);
+
+        //fetching the user
+        userProfileVM = ViewModelProviders.of(this,factory).get(UserProfileViewModel.class);
+        userProfileVM.getUser().observe(this, new Observer<User>() {
+            @Override
+            public void onChanged(@Nullable User user) {
+                username.setText(user.getUsername());
+                rating.setText("" + user.getRating());
+                spinner.setVisibility(View.GONE);
             }
         });
     }

@@ -13,14 +13,14 @@ import java.util.List;
  * This class will control each of the db references, which will be managed separately.
  */
 
-public class ModelFirebase {
-    private static final ModelFirebase instance = new ModelFirebase();
+public class ModelFireBase {
+    private static final ModelFireBase instance = new ModelFireBase();
 
-    public static ModelFirebase getInstance() {
+    public static ModelFireBase getInstance() {
         return instance;
     }
 
-    private ModelFirebase() {
+    private ModelFireBase() {
 
     }
 

@@ -33,7 +33,7 @@ public class Note {
     @Override
     public String toString() {
         NumberFormat formatter = new DecimalFormat("#0.000");
-        return this.note + this.octave + "\n(" + formatter.format(error) + ")";
+        return this.note  + "\n(" + formatter.format(error) + ")";
     }
 
     public String getNote() {

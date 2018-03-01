@@ -1,40 +1,36 @@
 package com.example.orpriesender.karaoke;
 
 import android.content.Context;
-import android.support.annotation.NonNull;
 import android.util.Log;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.storage.FileDownloadTask;
-import com.google.firebase.storage.UploadTask;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+
 
 /**
  * Created by aboud on 1/10/2018.
  */
 
 public class Grader {
+
+
+    public interface InitCallback {
+        void onReady(boolean success);
+    }
+
+    public interface GradeCallback {
+        void onGrade(double grade);
+    }
 
     private List<Pitch> sourcePitches = null;
     private List<Onset> sourceOnsets = null;
@@ -58,17 +54,11 @@ public class Grader {
     private String songName;
     private List<Group> groups;
 
-    private Lock lock;
-    private Condition condition;
-
+    private boolean onsetsCompleted = false, pitchesCompleted = false, groupsCompleted = false;
 
     public Grader(Context context, String songName) {
         this.context = context;
         this.songName = songName;
-
-        this.lock = new ReentrantLock();
-        this.condition = lock.newCondition();
-
         try {
             this.notes = getNotesMapFromJson();
 
@@ -81,69 +71,81 @@ public class Grader {
         }
     }
 
-    public boolean init(){
+    public void checkIfReady(InitCallback callback) {
+        synchronized (this) {
+            if (onsetsCompleted && pitchesCompleted && groupsCompleted) {
+                if (sourceOnsets == null || sourcePitches == null || groups == null) {
+                    callback.onReady(false);
+                } else{
+                    callback.onReady(true);
+                }
+            }
+        }
+
+    }
+
+    public void init(final InitCallback callback) {
         this.currentOffset = 0;
         this.performanceOnsets = new LinkedList<>();
         this.performancePitches = new LinkedList<>();
         this.mistakes = 0;
-        this.keepGoing  = true;
-        this.lock.lock();
+        this.keepGoing = true;
 
-        FirebaseStorageManager.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
-            @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot task,File localFile) {
-                sourceOnsets = OnsetReader.readOnsetsFromFile(localFile);
-                condition.signal();            }
-
-            @Override
-            public void onFailure(Exception e) {
-                errorMode = true;
-                condition.signal();            }
-        });
-
-        FirebaseStorageManager.getInstance().getSourcePitchFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
-            @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
-                sourcePitches = PitchReader.readPitchesFromFile(localFile);
-                condition.signal();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                errorMode = true;
-                condition.signal();
-            }
-        });
-
-        FirebaseStorageManager.getInstance().getGroupsForSong(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
-            @Override
-            public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
-                groups = GroupReader.readGroupsFromFile(localFile);
-                condition.signal();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                e.printStackTrace();
-                condition.signal();
-                // TODO : exit application or something
-            }
-        });
-
-        while((sourcePitches == null || sourceOnsets == null) || errorMode){
-            try {
-                condition.await();
-                lock.unlock();
-                for (Group g : groups){
-                    System.out.println(g);
+        if(!onsetsCompleted){
+            FirebaseStorageManager.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+                    sourceOnsets = OnsetReader.readOnsetsFromFile(localFile);
+                    onsetsCompleted = true;
+                    checkIfReady(callback);
                 }
-                if(errorMode)
-                    return false;
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+
+                @Override
+                public void onFailure(Exception e) {
+                    errorMode = true;
+                    onsetsCompleted = true;
+                    checkIfReady(callback);
+
+                }
+            });
         }
-        return true;
+
+        if(!pitchesCompleted){
+            FirebaseStorageManager.getInstance().getSourcePitchFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+                    sourcePitches = PitchReader.readPitchesFromFile(localFile);
+                    pitchesCompleted = true;
+                    checkIfReady(callback);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    errorMode = true;
+                    pitchesCompleted = true;
+                    checkIfReady(callback);
+                }
+            });
+        }
+
+
+        if(!groupsCompleted){
+            FirebaseStorageManager.getInstance().getGroupsForSong(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+                    groups = GroupReader.readGroupsFromFile(localFile);
+                    groupsCompleted = true;
+                    checkIfReady(callback);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    e.printStackTrace();
+                    groupsCompleted = true;
+                    checkIfReady(callback);
+                }
+            });
+        }
     }
 
     private Map<String, List<Double>> getNotesMapFromJson() throws IOException {
@@ -178,7 +180,7 @@ public class Grader {
             double below = notes.get(noteArr.get(noteIndex)).get(closestOctave);
             double above;
             //if the difference is positive, get the note above
-            if (diff > 0){
+            if (diff > 0) {
                 above = notes.get(noteArr.get((noteIndex + 1) % 12)).get(closestOctave % 8);
             }
             //if the difference is negative, get the note below
@@ -191,33 +193,32 @@ public class Grader {
 
     }
 
-    public void start(){
-        this.init();
+    public void start() {
         queue = new ArrayBlockingQueue<>(20);
         this.keepGoing = true;
         thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(keepGoing || !queue.isEmpty()){
+                while (keepGoing || !queue.isEmpty()) {
                     try {
-                        Pitch p = queue.poll(1,TimeUnit.SECONDS);
-                        if(p != null){
+                        Pitch p = queue.poll(1, TimeUnit.SECONDS);
+                        if (p != null) {
                             consumePitch(p);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
-                }
+            }
 
         });
         thread.start();
     }
 
-    public void stop(){
+    public void stop() {
         try {
             keepGoing = false;
-            if(thread != null)
+            if (thread != null)
                 thread.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -225,8 +226,8 @@ public class Grader {
 
     }
 
-    public void insertPitch(Pitch p){
-        if(p != null){
+    public void insertPitch(Pitch p) {
+        if (p != null) {
             try {
                 queue.put(p);
             } catch (InterruptedException e) {
@@ -243,8 +244,8 @@ public class Grader {
     //save the current given pitch and analyze it
     public void consumePitch(Pitch pitch) {
         boolean correct = false;
-        boolean halfCorrect=false;
-        if(pitch.getPitch() == -1)
+        boolean halfCorrect = false;
+        if (pitch.getPitch() == -1)
             return;
         this.performancePitches.add(pitch);
         for (int i = currentOffset; i < sourcePitches.size(); i++) {
@@ -255,20 +256,15 @@ public class Grader {
                 currentOffset = i;
                 correct = true;
                 break;
-            }
-            else if((given.distance(source)==1||given.distance(source)==11) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 0.2))
-            {
-             halfCorrect=true;
+            } else if ((given.distance(source) == 1 || given.distance(source) == 11) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 0.2)) {
+                halfCorrect = true;
             }
 
         }
         if (!correct) {
-            if(halfCorrect)
-            {
-                mistakes+=0.5;
-            }
-            else
-            {
+            if (halfCorrect) {
+                mistakes += 0.5;
+            } else {
                 mistakes++;
             }
         }
@@ -311,12 +307,18 @@ public class Grader {
         }
     }
 
-    public double getGrade() {
-        this.stop();
-        if(performancePitches.size() == 0){
-            return 0;
-        }
-        double mistakePercent = ( (double) mistakes /((double) performancePitches.size()));
-        return 100 - (100 * mistakePercent);
+    public void getGrade(final GradeCallback callback) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                stop();
+                if (performancePitches.size() == 0) {
+                    callback.onGrade(0);
+                }
+                double mistakePercent = ((double) mistakes / ((double) performancePitches.size()));
+                callback.onGrade(mistakePercent);
+
+            }
+        }).start();
     }
 }

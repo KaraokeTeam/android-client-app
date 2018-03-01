@@ -7,6 +7,21 @@
     android:background="@drawable/blue">
 
 
+    <ProgressBar
+        android:id="@+id/tarsos_activity_spinner"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="93dp"
+        android:layout_height="89dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@+id/tarsos_activity_stop"
+        app:layout_constraintEnd_toEndOf="@+id/tarsos_activity_video"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/tarsos_activity_song_name" />
+
     <VideoView
         android:id="@+id/tarsos_activity_video"
         android:layout_width="match_parent"

@@ -1,7 +1,11 @@
 package com.example.orpriesender.karaoke;
 
-import android.app.Fragment;
+//import android.app.Fragment;
+import android.arch.lifecycle.Observer;
+import android.support.v4.app.Fragment;
 import android.app.ListFragment;
+import android.arch.lifecycle.ViewModelProvider;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -27,6 +31,7 @@ public class PostListFragment extends Fragment {
     private ProgressBar spinner;
     private TextView noItemsText;
     private onUsernameClicked listener;
+    private PostListViewModel vm;
 
     public PostListFragment(){}
 
@@ -35,6 +40,7 @@ public class PostListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_posts_list,container,false);
     }
+
 
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {

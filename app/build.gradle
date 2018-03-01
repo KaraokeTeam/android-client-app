@@ -21,6 +21,19 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
+
+    // ViewModel and LiveData
+    implementation "android.arch.lifecycle:extensions:1.0.0"
+    annotationProcessor "android.arch.lifecycle:compiler:1.0.0"
+    // Room
+    implementation "android.arch.persistence.room:runtime:1.0.0"
+    annotationProcessor "android.arch.persistence.room:compiler:1.0.0"
+    // Paging
+    implementation "android.arch.paging:runtime:1.0.0-alpha4-1"
+    // Test helpers for LiveData
+    testImplementation "android.arch.core:core-testing:1.0.0"
+    // Test helpers for Room
+    testImplementation "android.arch.persistence.room:testing:1.0.0"
     //androidTestImplementation 'com.android.support.test:runner:1.0.1'
     //androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
 
@@ -37,8 +50,5 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.9.3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.9.3'
 
-
-
+    apply plugin: 'com.google.gms.google-services'
 }
-
-apply plugin: 'com.google.gms.google-services'

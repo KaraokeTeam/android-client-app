@@ -1,8 +1,8 @@
 package com.example.orpriesender.karaoke;
 
 
-import android.app.Activity;
-import android.app.Fragment;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -10,13 +10,10 @@ import android.support.v4.app.FragmentActivity;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -26,6 +23,7 @@ import java.util.List;
 public class FeedActivity extends FragmentActivity implements PostListFragment.onUsernameClicked{
 
     ImageButton profileButton,singButton;
+    PostListViewModel vm;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,19 +32,12 @@ public class FeedActivity extends FragmentActivity implements PostListFragment.o
         profileButton = findViewById(R.id.all_posts_profile_button);
         singButton = findViewById(R.id.all_posts_sing_button);
 
-        final PostListFragment fragment = (PostListFragment) getFragmentManager().findFragmentById(R.id.list_fragment);
-        ModelFirebase.getInstance().getAllPosts(new ModelFirebase.FirebaseCallback<List<Post>>() {
+        final PostListFragment fragment = (PostListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
+        vm = ViewModelProviders.of(this).get(PostListViewModel.class);
+        vm.getAllPosts().observe(this, new Observer<List<Post>>() {
             @Override
-            public void onComplete(List<Post> posts) {
+            public void onChanged(@Nullable List<Post> posts) {
                 fragment.setPosts(posts);
-            }
-
-            @Override
-            public void onCancel() {
-                //spinner.setVisibility(View.GONE);
-                Toast toast = Toast.makeText(getApplicationContext(),"Loading feed failed",Toast.LENGTH_SHORT);
-                toast.setGravity(Gravity.TOP,0,200);
-                toast.show();
             }
         });
 

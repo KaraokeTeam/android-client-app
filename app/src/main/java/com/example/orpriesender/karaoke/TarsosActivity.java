@@ -1,16 +1,25 @@
 package com.example.orpriesender.karaoke;
 
+
 import android.app.Activity;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
+
+import java.io.File;
 
 import be.tarsos.dsp.AudioEvent;
 import be.tarsos.dsp.onsets.OnsetHandler;
@@ -18,7 +27,13 @@ import be.tarsos.dsp.pitch.PitchDetectionHandler;
 import be.tarsos.dsp.pitch.PitchDetectionResult;
 
 
-public class TarsosActivity extends Activity {
+
+public class TarsosActivity extends FragmentActivity {
+
+
+    public interface DataFetchCallback{
+        public void onDataReady(boolean success);
+    }
 
     TextView pitchText, noteText,countdownText;
     Button  stopListeningButton;
@@ -27,6 +42,12 @@ public class TarsosActivity extends Activity {
     Spinner dropdown;
     Grader grader;
     AudioAnalyzer analyzer;
+    ProgressBar spinner;
+    String videoPath;
+    boolean isGraderReady = false, isVideoReady = false;
+
+    TarsosViewModel tarsosVM;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +63,7 @@ public class TarsosActivity extends Activity {
         startListeningButton = findViewById(R.id.tarsos_activity_start_button);
         stopListeningButton = findViewById(R.id.tarsos_activity_stop);
         video = findViewById(R.id.tarsos_activity_video);
+        this.spinner = findViewById(R.id.tarsos_activity_spinner);
 
 //        //init the drop down list
 //        String items[] = new String[]{"Eyal Golan - Zlil Meitar","Simple Do Re Mi"};
@@ -52,19 +74,39 @@ public class TarsosActivity extends Activity {
 
         //create a grader with relevant sources
         grader = new Grader(getApplicationContext(), "zlil");
+        startListeningButton.setEnabled(false);
+        stopListeningButton.setEnabled(false);
+        spinner.setVisibility(View.VISIBLE);
+
+
+        fetchSources(new DataFetchCallback() {
+            @Override
+            public void onDataReady(boolean success) {
+                if(success){
+                    startListeningButton.setEnabled(true);
+                    spinner.setVisibility(View.GONE);
+                    if(videoPath != null){
+                        video.setVideoPath(videoPath);
+                    }
+                }else{
+                    //ignore
+                }
+            }
+        });
+
 
         //set a pitch handler
         final PitchDetectionHandler pitchDetectionHandler = new PitchDetectionHandler() {
             @Override
             public void handlePitch(final PitchDetectionResult res, final AudioEvent e) {
                 final float pitchInHz = res.getPitch();
+                grader.insertPitch(new Pitch(pitchInHz, new Float(e.getTimeStamp()), new Float(e.getEndTimeStamp()), res.getProbability()));
                 runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (res.getPitch() != -1) {
-                            grader.insertPitch(new Pitch(pitchInHz, new Float(e.getTimeStamp()), new Float(e.getEndTimeStamp()), res.getProbability()));
-                            pitchText.setText("Pitch: " + res.getPitch());
-                            noteText.setText("Note: " + grader.getNoteFromHz(res.getPitch()).getNote());
+                            @Override
+                            public void run() {
+                                if (res.getPitch() != -1) {
+                                    pitchText.setText("Pitch: " + pitchInHz);
+                                    noteText.setText("Note: " + grader.getNoteFromHz(pitchInHz).getNote());
                         } else {
                             pitchText.setText("0.00");
                             noteText.setText("--");
@@ -98,31 +140,34 @@ public class TarsosActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                startListeningButton.animate().alpha(0.0f).setDuration(500);
-                video.animate().alpha(1.0f).setDuration(1000);
-                CountDownTimer timer = new CountDownTimer(3000,1000) {
-                    @Override
-                    public void onTick(long millisUntilFinished) {
-                        String nextText = "" + (Integer.parseInt(countdownText.getText().toString()) - 1);
-                        stopListeningButton.setEnabled(false);
-                        countdownText.setText(nextText);
-                        countdownText.setVisibility(View.VISIBLE);
-                    }
-
-                    @Override
-                    public void onFinish() {
-                        countdownText.setVisibility(View.GONE);
-                        countdownText.setText("3");
-                        stopListeningButton.setEnabled(true);
-
-                        boolean isListening = startListening();
-                        if(!isListening){
-                            //TODO: quit with error, or present error and reset
-                        }
-                    }
-                };
-
-                timer.start();
+                animateStartListeningButton(0.0f);
+                animateVideo(1.0f);
+//                CountDownTimer timer = new CountDownTimer(3000,1000) {
+//                    @Override
+//                    public void onTick(long millisUntilFinished) {
+//                        String nextText = "" + (Integer.parseInt(countdownText.getText().toString()) - 1);
+//                        stopListeningButton.setEnabled(false);
+//                        countdownText.setText(nextText);
+//                        countdownText.setVisibility(View.VISIBLE);
+//                    }
+//
+//                    @Override
+//                    public void onFinish() {
+//                        countdownText.setVisibility(View.GONE);
+//                        countdownText.setText("3");
+//                        stopListeningButton.setEnabled(true);
+//
+//                        boolean isListening = startListening();
+//                        if(!isListening){
+//                            //TODO: quit with error, or present error and reset
+//                        }
+//                    }
+//                };
+//
+//                timer.start();
+                startListeningButton.setEnabled(false);
+                stopListeningButton.setEnabled(true);
+               startListening();
             }
         });
 
@@ -130,10 +175,11 @@ public class TarsosActivity extends Activity {
         stopListeningButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-            double grade = stopListening();
-                startListeningButton.animate().alpha(1.0f).setDuration(500);
-                video.animate().alpha(0.0f).setDuration(1000);
-            System.out.println("GRADE IS " + grade);
+                animateVideo(0.0f);
+                animateStartListeningButton(0.0f);
+                startListeningButton.setEnabled(true);
+                stopListeningButton.setEnabled(false);
+                stopListening();
             }
         });
 
@@ -145,24 +191,106 @@ public class TarsosActivity extends Activity {
         });
     }
 
-    private boolean startListening(){
-        boolean graderAvailable = grader.init();
-        if(graderAvailable){
-            grader.start();
-            analyzer.start();
-            return true;
-        }else{
-            analyzer.start();
-            return false;
+    private void animateVideo(final float opacity){
+        TarsosActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                video.animate().alpha(opacity).setDuration(1000);
+            }
+        });
+    }
+
+    private void animateStartListeningButton(final float opacity){
+        TarsosActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                startListeningButton.animate().alpha(opacity).setDuration(1000);
+            }
+        });
+    }
+
+    private void fetchSources(DataFetchCallback callback){
+        initGrader(callback);
+        initVideo(callback);
+    }
+
+    private void checkIfReady(DataFetchCallback callback){
+        synchronized (this){
+            if(isVideoReady && isGraderReady){
+                 if(video == null || grader == null){
+                        callback.onDataReady(false);
+                }else{
+                     callback.onDataReady(true);
+                 }
+            }
         }
     }
 
-    private double stopListening(){
+    private void initGrader(final DataFetchCallback callback){
+        grader.init(new Grader.InitCallback() {
+            @Override
+            public void onReady(boolean success) {
+                isGraderReady = true;
+                if(!success){
+                    checkIfReady(callback);
+                }else{
+                    Log.d("LOG","GRADER SUCCESS");
+                    checkIfReady(callback);
+                }
+            }
+        });
+    }
+
+    private void startListening(){
+        Log.d("LOG","START LISTENING");
+        video.start();
+        analyzer.start();
+        grader.start();
+    }
+
+    private void initVideo(final DataFetchCallback callback){
+        TarsosViewModelFactory factory = new TarsosViewModelFactory("zlil","mp4");
+        tarsosVM = ViewModelProviders.of(this,factory).get(TarsosViewModel.class);
+        tarsosVM.getPlayback().observe(this, new Observer<File>() {
+            @Override
+            public void onChanged(@Nullable File file) {
+                isVideoReady = true;
+                videoPath = file.getPath();
+                checkIfReady(callback);
+            }
+        });
+    }
+
+    private void presentToast(final String text, final int length){
+        TarsosActivity.this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast toast = Toast.makeText(getApplicationContext(), text, length);
+                toast.show();
+            }
+        });
+    }
+
+
+
+    private void stopListening(){
         analyzer.stop();
-        double grade = grader.getGrade();
+        video.stopPlayback();
+        spinner.setVisibility(View.VISIBLE);
+        grader.getGrade(new Grader.GradeCallback() {
+            @Override
+            public void onGrade(double grade) {
+                TarsosActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        spinner.setVisibility(View.GONE);
+                    }
+                });
+                Log.d("LOG","grade : " + grade);
+            }
+        });
         pitchText.setText("0.00");
         noteText.setText("--");
-        return grade;
     }
 
 }

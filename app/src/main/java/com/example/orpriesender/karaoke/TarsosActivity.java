@@ -1,23 +1,24 @@
 package com.example.orpriesender.karaoke;
 
 
-import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.MediaController;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
 
@@ -38,13 +39,14 @@ public class TarsosActivity extends FragmentActivity {
     TextView pitchText, noteText,countdownText;
     Button  stopListeningButton;
     ImageButton startListeningButton,backButton;
-    VideoView video;
+    VideoView videoView;
     Spinner dropdown;
     Grader grader;
     AudioAnalyzer analyzer;
     ProgressBar spinner;
     String videoPath;
     boolean isGraderReady = false, isVideoReady = false;
+    String songName;
 
     TarsosViewModel tarsosVM;
 
@@ -62,18 +64,19 @@ public class TarsosActivity extends FragmentActivity {
         noteText = findViewById(R.id.tarsos_activity_note_text);
         startListeningButton = findViewById(R.id.tarsos_activity_start_button);
         stopListeningButton = findViewById(R.id.tarsos_activity_stop);
-        video = findViewById(R.id.tarsos_activity_video);
+        videoView = findViewById(R.id.tarsos_activity_video);
         this.spinner = findViewById(R.id.tarsos_activity_spinner);
-
+//
 //        //init the drop down list
 //        String items[] = new String[]{"Eyal Golan - Zlil Meitar","Simple Do Re Mi"};
 //
 //        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this,R.layout.support_simple_spinner_dropdown_item,items);
 //        dropdown.setAdapter(spinnerAdapter);
-
+//
 
         //create a grader with relevant sources
-        grader = new Grader(getApplicationContext(), "zlil");
+        this.songName = "zlil";
+        grader = new Grader(getApplicationContext(), songName);
         startListeningButton.setEnabled(false);
         stopListeningButton.setEnabled(false);
         spinner.setVisibility(View.VISIBLE);
@@ -86,10 +89,10 @@ public class TarsosActivity extends FragmentActivity {
                     startListeningButton.setEnabled(true);
                     spinner.setVisibility(View.GONE);
                     if(videoPath != null){
-                        video.setVideoPath(videoPath);
+                        videoView.setVideoPath(videoPath);
                     }
                 }else{
-                    //ignore
+                    presentToast("Failed downloading required sources",Toast.LENGTH_LONG);
                 }
             }
         });
@@ -120,7 +123,6 @@ public class TarsosActivity extends FragmentActivity {
         final OnsetHandler onsetHandler = new OnsetHandler() {
             @Override
             public void handleOnset(double time, double silence) {
-                System.out.println("ONSET : " + time);
                 grader.consumeOnset(new Onset(new Float(time)));
             }
         };
@@ -131,7 +133,7 @@ public class TarsosActivity extends FragmentActivity {
         //give the analyzer wanted handlers
         analyzer.setPitchHandler(pitchDetectionHandler);
         analyzer.setOnsetHandler(onsetHandler);
-        analyzer.setRecordFile("realtime_record");
+        analyzer.setRecordFile(songName);
         analyzer.init();
 
         //start listening
@@ -142,29 +144,6 @@ public class TarsosActivity extends FragmentActivity {
 
                 animateStartListeningButton(0.0f);
                 animateVideo(1.0f);
-//                CountDownTimer timer = new CountDownTimer(3000,1000) {
-//                    @Override
-//                    public void onTick(long millisUntilFinished) {
-//                        String nextText = "" + (Integer.parseInt(countdownText.getText().toString()) - 1);
-//                        stopListeningButton.setEnabled(false);
-//                        countdownText.setText(nextText);
-//                        countdownText.setVisibility(View.VISIBLE);
-//                    }
-//
-//                    @Override
-//                    public void onFinish() {
-//                        countdownText.setVisibility(View.GONE);
-//                        countdownText.setText("3");
-//                        stopListeningButton.setEnabled(true);
-//
-//                        boolean isListening = startListening();
-//                        if(!isListening){
-//                            //TODO: quit with error, or present error and reset
-//                        }
-//                    }
-//                };
-//
-//                timer.start();
                 startListeningButton.setEnabled(false);
                 stopListeningButton.setEnabled(true);
                startListening();
@@ -195,7 +174,7 @@ public class TarsosActivity extends FragmentActivity {
         TarsosActivity.this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                video.animate().alpha(opacity).setDuration(1000);
+                videoView.animate().alpha(opacity).setDuration(1000);
             }
         });
     }
@@ -217,7 +196,7 @@ public class TarsosActivity extends FragmentActivity {
     private void checkIfReady(DataFetchCallback callback){
         synchronized (this){
             if(isVideoReady && isGraderReady){
-                 if(video == null || grader == null){
+                 if(videoView == null || grader == null){
                         callback.onDataReady(false);
                 }else{
                      callback.onDataReady(true);
@@ -234,7 +213,6 @@ public class TarsosActivity extends FragmentActivity {
                 if(!success){
                     checkIfReady(callback);
                 }else{
-                    Log.d("LOG","GRADER SUCCESS");
                     checkIfReady(callback);
                 }
             }
@@ -242,8 +220,8 @@ public class TarsosActivity extends FragmentActivity {
     }
 
     private void startListening(){
-        Log.d("LOG","START LISTENING");
-        video.start();
+        Log.d("TAG","START LISTENING");
+        videoView.start();
         analyzer.start();
         grader.start();
     }
@@ -254,11 +232,17 @@ public class TarsosActivity extends FragmentActivity {
         tarsosVM.getPlayback().observe(this, new Observer<File>() {
             @Override
             public void onChanged(@Nullable File file) {
-                isVideoReady = true;
-                videoPath = file.getPath();
-                checkIfReady(callback);
+                if(file != null){
+                    isVideoReady = true;
+                    videoPath = file.getPath();
+                    checkIfReady(callback);
+                }
             }
         });
+    //in case we want to add media controls
+    //        MediaController controller = new MediaController(this,false);
+    //        controller.setAnchorView(videoView);
+    //        videoView.setMediaController(controller);
     }
 
     private void presentToast(final String text, final int length){
@@ -275,15 +259,29 @@ public class TarsosActivity extends FragmentActivity {
 
     private void stopListening(){
         analyzer.stop();
-        video.stopPlayback();
+        videoView.stopPlayback();
         spinner.setVisibility(View.VISIBLE);
         grader.getGrade(new Grader.GradeCallback() {
             @Override
-            public void onGrade(double grade) {
+            public void onGrade(final double grade) {
                 TarsosActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         spinner.setVisibility(View.GONE);
+                        final Intent intent = new Intent(getApplicationContext(),ResultActivity.class);
+                        intent.putExtra("grade",grade);
+                        intent.putExtra("performanceFileName",analyzer.getRecordFileName());
+                        intent.putExtra("song",songName);
+                        intent.putExtra("performanceFile",analyzer.getRecordFile());
+                        KaraokeRepository.getInstance().getUser(FirebaseAuth.getInstance().getUid()).observe(TarsosActivity.this, new Observer<User>() {
+                            @Override
+                            public void onChanged(@Nullable User user) {
+                                intent.putExtra("uid",user.getId());
+                                intent.putExtra("username",user.getUsername());
+                                startActivity(intent);
+                            }
+                        });
+
                     }
                 });
                 Log.d("LOG","grade : " + grade);

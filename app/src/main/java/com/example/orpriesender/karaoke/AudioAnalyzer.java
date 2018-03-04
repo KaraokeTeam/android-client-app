@@ -1,6 +1,7 @@
 package com.example.orpriesender.karaoke;
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Environment;
 
 import java.io.File;
@@ -79,12 +80,22 @@ public class AudioAnalyzer {
         this.onsetHandler = handler;
     }
 
-    //EXTERNAL STORAGE - CHANGE ?
     public void setRecordFile(String filename) {
-        recordFile = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), filename + ".wav");
+        recordFile = LocalCacheManager.getInstance().saveOrUpdate(filename + ".wav");
+                /*
+                new File(Environment.getExternalStorageDirectory().getAbsolutePath(), filename + ".wav");
         if (recordFile.exists()) {
             recordFile.delete();
         }
+                 */
+    }
+
+    public File getRecordFile(){
+        return recordFile;
+    }
+
+    public String getRecordFileName(){
+        return Uri.fromFile(recordFile).getLastPathSegment();
     }
 
 

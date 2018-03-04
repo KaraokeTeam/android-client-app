@@ -50,6 +50,7 @@ public class ModelFireBase {
         String postId = FirebaseDatabase.getInstance().getReference("posts").push().getKey();
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("posts");
         ref.child(postId).setValue(post.toMap());
+        post.setId(postId);
 
     }
 

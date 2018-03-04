@@ -1,6 +1,8 @@
 package com.example.orpriesender.karaoke;
 
+import android.arch.lifecycle.Observer;
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.util.Log;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.storage.FileDownloadTask;
@@ -92,7 +94,7 @@ public class Grader {
         this.keepGoing = true;
 
         if(!onsetsCompleted){
-            FirebaseStorageManager.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+            KaraokeRepository.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
                     sourceOnsets = OnsetReader.readOnsetsFromFile(localFile);
@@ -111,7 +113,7 @@ public class Grader {
         }
 
         if(!pitchesCompleted){
-            FirebaseStorageManager.getInstance().getSourcePitchFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+            KaraokeRepository.getInstance().getSourcePitchFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
                     sourcePitches = PitchReader.readPitchesFromFile(localFile);
@@ -130,7 +132,7 @@ public class Grader {
 
 
         if(!groupsCompleted){
-            FirebaseStorageManager.getInstance().getGroupsForSong(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+            KaraokeRepository.getInstance().getGroupsForSong(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
                     groups = GroupReader.readGroupsFromFile(localFile);

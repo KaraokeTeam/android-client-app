@@ -2,6 +2,7 @@ package com.example.orpriesender.karaoke;
 
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -29,9 +30,39 @@ public class FirebaseStorageManager {
         return instance;
     }
 
+
+    void downloadAudioForPost(String postId,final FireBaseStorageDownloadCallback callback){
+        try{
+            //whatever it is saved in
+            StorageReference instance = FirebaseStorage.getInstance().getReference("performances/" + postId + ".wav");
+            final File localFile = File.createTempFile(postId,"wav");
+            localFile.deleteOnExit();
+            instance.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    callback.onSuccess(taskSnapshot,localFile);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    callback.onFailure(e);
+                }
+            });
+
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+
     void uploadAudioForPost(String postId, File file,final FireBaseStorageUploadCallback callback){
-        StorageReference instance = FirebaseStorage.getInstance().getReference("audio");
-        final UploadTask task = instance.child(postId).putFile(Uri.fromFile(file));
+        if(file == null){
+            callback.onFailure(new NullPointerException("Attempt to upload a null file"));
+            return;
+        }
+
+        StorageReference instance = FirebaseStorage.getInstance().getReference().child("performances/").child(postId + ".wav");
+        final UploadTask task = instance.putFile(Uri.fromFile(file));
         task.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -61,10 +92,12 @@ public class FirebaseStorageManager {
         });
     }
 
-    void getPlayback(String name,String extension,final FireBaseStorageDownloadCallback callback){
-        StorageReference ref = FirebaseStorage.getInstance().getReference().child("playbacks/" + name + "." + extension);
+    //TODO : cache here also
+    void downloadImageForUser(String userId,final FireBaseStorageDownloadCallback callback){
+        StorageReference ref = FirebaseStorage.getInstance().getReference().child("images/" + userId + ".jpg");
         try {
-            final File localFile = File.createTempFile("playbacks",name + "." + extension);
+            final File localFile = File.createTempFile(userId,"jpg");
+            localFile.deleteOnExit();
             ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
 
                 @Override
@@ -82,18 +115,36 @@ public class FirebaseStorageManager {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    //saves the playback to a local file
+    void getPlayback(String filename,final FireBaseStorageDownloadCallback callback){
+        final File cacheFile = LocalCacheManager.getInstance().saveOrUpdate(filename);
+        StorageReference ref = FirebaseStorage.getInstance().getReference().child("playbacks/" + filename);
+            ref.getFile(cacheFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+
+                @Override
+                public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                    callback.onSuccess(taskSnapshot,cacheFile);
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    callback.onFailure(e);
+                    cacheFile.delete();
+                }
+            });
 
     }
 
     void getSourceOnsetFile(String name,final FireBaseStorageDownloadCallback callback){
         StorageReference ref = FirebaseStorage.getInstance().getReference().child("sources/" + name + "/onsets.txt");
-        try{
-            final File localFile = File.createTempFile(name + "Onsets",".txt");
-            localFile.deleteOnExit();
-            ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            final File cachedFile = LocalCacheManager.getInstance().saveOrUpdate(name + "Onsets.txt");
+            ref.getFile(cachedFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    callback.onSuccess(taskSnapshot,localFile);
+                    callback.onSuccess(taskSnapshot,cachedFile);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -101,20 +152,15 @@ public class FirebaseStorageManager {
                     callback.onFailure(e);
                 }
             });
-        }catch(IOException e){
-            e.printStackTrace();
-        }
     }
 
     void getSourcePitchFile(String name,final FireBaseStorageDownloadCallback callback){
         StorageReference ref = FirebaseStorage.getInstance().getReference().child("sources/" + name + "/pitches.txt");
-        try{
-            final File localFile = File.createTempFile(name + "Pitches",".txt");
-            localFile.deleteOnExit();
-            ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            final File cachedFile = LocalCacheManager.getInstance().saveOrUpdate(name + "Pitches.txt");
+            ref.getFile(cachedFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    callback.onSuccess(taskSnapshot,localFile);
+                    callback.onSuccess(taskSnapshot,cachedFile);
                 }
             }).addOnFailureListener(new OnFailureListener() {
                 @Override
@@ -122,21 +168,15 @@ public class FirebaseStorageManager {
                     callback.onFailure(e);
                 }
             });
-        }catch(IOException e){
-            e.printStackTrace();
-        }
     }
 
     void getGroupsForSong(String songName, final FireBaseStorageDownloadCallback callback){
         StorageReference ref = FirebaseStorage.getInstance().getReference().child("groups/" + songName + ".json");
-        try{
-            final File localFile = File.createTempFile(songName + "Groups",".json");
-            localFile.deleteOnExit();
-
-            ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+            final File cachedFile = LocalCacheManager.getInstance().saveOrUpdate(songName + "Groups.json");
+            ref.getFile(cachedFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                    callback.onSuccess(taskSnapshot,localFile);
+                    callback.onSuccess(taskSnapshot,cachedFile);
 
                 }
             }).addOnFailureListener(new OnFailureListener() {
@@ -145,10 +185,6 @@ public class FirebaseStorageManager {
                     callback.onFailure(e);
                 }
             });
-
-        } catch (IOException e){
-            e.printStackTrace();
-        }
     }
 
     interface FireBaseStorageDownloadCallback{

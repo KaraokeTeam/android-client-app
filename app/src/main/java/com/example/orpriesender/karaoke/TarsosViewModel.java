@@ -12,8 +12,8 @@ import java.io.File;
 public class TarsosViewModel extends ViewModel {
     private LiveData<File> data;
 
-    public TarsosViewModel(String name,String extension){
-        data = KaraokeRepository.getInstance().getPlayback(name,extension);
+    public TarsosViewModel(String filename){
+        data = KaraokeRepository.getInstance().getPlayback(filename);
     }
 
     public LiveData<File> getPlayback(){

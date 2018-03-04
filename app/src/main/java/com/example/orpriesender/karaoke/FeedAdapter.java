@@ -1,15 +1,19 @@
 package com.example.orpriesender.karaoke;
 
 import android.app.Activity;
+import android.arch.lifecycle.Observer;
 import android.content.Context;
+import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.ImageButton;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -61,11 +65,11 @@ public class FeedAdapter extends BaseAdapter {
         TextView description = (TextView) convertView.findViewById(R.id.description);
         TextView time = (TextView) convertView.findViewById(R.id.time);
         SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.seek_bar);
+        ImageButton playPause = (ImageButton) convertView.findViewById(R.id.play_pause_button);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 posts.get(position).setAudioPosition(progress);
-                //if there is an actual audio file, seek to this position - maybe a function inside post
             }
 
             @Override

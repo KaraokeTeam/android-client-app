@@ -60,9 +60,6 @@ public class MainActivity extends Activity {
         User newUser = new User(user);
         ModelFireBase.getInstance().addUser(newUser);
 
-        for(int i =0;i < 10; i++){
-            ModelFireBase.getInstance().addPost(new Post(newUser.getId(),newUser.getUsername(),"bla bla","song name","songUrl"));
-        }
 
         setContentView(R.layout.activity_main);
         record_button = (Button) findViewById(R.id.record);
@@ -91,7 +88,7 @@ public class MainActivity extends Activity {
                 videoView = findViewById(R.id.tarsos_activity_video);
                 videoView.setVideoPath("android.resource://com.example.orpriesender.karaoke/raw/zlil");
                 videoView.start();
-                //video.playVideo();
+                //videoView.playVideo();
                 videoPlaying = true;
                 videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
@@ -114,7 +111,7 @@ public class MainActivity extends Activity {
             @Override
             public void onClick(View v) {
                 videoView.stopPlayback();
-                //video.stopVideo();
+                //videoView.stopVideo();
                 recorder.stop();
                 recording = false;
                 videoPlaying = false;
@@ -131,7 +128,7 @@ public class MainActivity extends Activity {
                     public void onGradeResponse(Integer grade) {
                         Log.d("TAG", "got response :" + grade);
                         Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-                        intent.putExtra("outputFile", outputFile);
+                        intent.putExtra("performanceFileName", outputFile);
                         intent.putExtra("grade", grade);
                         pb.setVisibility(View.GONE);
                         startActivity(intent);

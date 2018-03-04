@@ -14,7 +14,6 @@ public class User {
     private String id;
     private String username;
     private Uri imageUrl;
-    private List<Integer> posts;
     private int rating;
 
     public User(FirebaseUser user){
@@ -50,14 +49,6 @@ public class User {
 
     public void setImageUrl(Uri imageUrl) {
         this.imageUrl = imageUrl;
-    }
-
-    public List<Integer> getPosts() {
-        return posts;
-    }
-
-    public void setPosts(List<Integer> posts) {
-        this.posts = posts;
     }
 
     public int getRating() {

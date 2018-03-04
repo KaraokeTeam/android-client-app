@@ -3,8 +3,6 @@ package com.example.orpriesender.karaoke;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.ViewModel;
 
-import java.util.List;
-
 /**
  * Created by Or Priesender on 28-Feb-18.
  */

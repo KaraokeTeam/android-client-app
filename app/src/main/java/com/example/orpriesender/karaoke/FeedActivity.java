@@ -29,18 +29,27 @@ public class FeedActivity extends FragmentActivity implements PostListFragment.o
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_posts);
+
+        LocalCacheManager.setContext(getApplicationContext());
+
         profileButton = findViewById(R.id.all_posts_profile_button);
         singButton = findViewById(R.id.all_posts_sing_button);
 
+        for(int i=0; i<10;i++){
+            KaraokeRepository.getInstance().addPost(new Post(FirebaseAuth.getInstance().getUid(),FirebaseAuth.getInstance().getCurrentUser().getDisplayName(),"post number " + i,"zlil meitar"));
+        }
+
+
         final PostListFragment fragment = (PostListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
+
         vm = ViewModelProviders.of(this).get(PostListViewModel.class);
         vm.getAllPosts().observe(this, new Observer<List<Post>>() {
             @Override
             public void onChanged(@Nullable List<Post> posts) {
-                fragment.setPosts(posts);
+                if(posts != null)
+                    fragment.setPosts(posts);
             }
         });
-
 
         profileButton.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -30,7 +30,7 @@
             android:layout_weight="3"
             style="?android:attr/borderlessButtonStyle"/>
     </LinearLayout>
-    <fragment android:name="com.example.orpriesender.karaoke.PostListFragment"
+    <fragment android:name="com.example.orpriesender.karaoke.controller.PostListFragment"
         android:id="@+id/list_fragment"
         android:layout_width = "match_parent"
         android:layout_height = "match_parent"/>

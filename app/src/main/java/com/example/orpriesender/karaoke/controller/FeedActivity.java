@@ -15,6 +15,8 @@ import com.example.orpriesender.karaoke.model.KaraokeRepository;
 import com.example.orpriesender.karaoke.model.LocalCacheManager;
 import com.example.orpriesender.karaoke.model.Post;
 import com.example.orpriesender.karaoke.model.RoomDatabaseManager;
+import com.example.orpriesender.karaoke.model.SongItem;
+import com.example.orpriesender.karaoke.model.User;
 import com.example.orpriesender.karaoke.view_model.PostListViewModel;
 import com.example.orpriesender.karaoke.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,18 +31,18 @@ import java.util.List;
 public class FeedActivity extends FragmentActivity implements PostListFragment.onUsernameClicked , PostListFragment.onPlayClicked{
 
     ImageButton profileButton, singButton;
-    final MediaPlayer player = new MediaPlayer();
     PostListViewModel vm;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
+        //when application starts, set the context
         LocalCacheManager.setContext(getApplicationContext());
         RoomDatabaseManager.setContext(getApplicationContext());
 
+        KaraokeRepository.getInstance().addUser(new User(FirebaseAuth.getInstance().getCurrentUser()));
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_posts);
-
-
         profileButton = findViewById(R.id.all_posts_profile_button);
         singButton = findViewById(R.id.all_posts_sing_button);
         final PostListFragment fragment = (PostListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);
@@ -96,5 +98,11 @@ public class FeedActivity extends FragmentActivity implements PostListFragment.o
                 callback.onDownloadFinished(file);
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalCacheManager.getInstance().destroyCache();
     }
 }

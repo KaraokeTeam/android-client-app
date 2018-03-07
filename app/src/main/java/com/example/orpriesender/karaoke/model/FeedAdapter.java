@@ -2,6 +2,7 @@ package com.example.orpriesender.karaoke.model;
 
 import android.app.Activity;
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -67,17 +68,19 @@ public class FeedAdapter extends BaseAdapter {
         }
 
 
-        //ImageView image = (ImageView) convertView.findViewById(R.id.user_image);
-        TextView username = (TextView) convertView.findViewById(R.id.username);
-        TextView description = (TextView) convertView.findViewById(R.id.description);
-        TextView time = (TextView) convertView.findViewById(R.id.time);
-        final SeekBar seekBar = (SeekBar) convertView.findViewById(R.id.seek_bar);
-        final ImageButton playPause = (ImageButton) convertView.findViewById(R.id.play_pause_button);
-        final ProgressBar spinner = (ProgressBar) convertView.findViewById(R.id.feed_item_spinner);
+        //ImageView image = convertView.findViewById(R.id.user_image);
+        TextView username = convertView.findViewById(R.id.username);
+        TextView description = convertView.findViewById(R.id.description);
+        TextView time =  convertView.findViewById(R.id.time);
+        final SeekBar seekBar = convertView.findViewById(R.id.seek_bar);
+        final ImageButton playPause =  convertView.findViewById(R.id.play_pause_button);
+        final ProgressBar spinner =  convertView.findViewById(R.id.feed_item_spinner);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                posts.get(position).setAudioPosition(progress);
+                if(fromUser){
+                    posts.get(position).setAudioPosition(progress);
+                }
             }
 
             @Override
@@ -104,7 +107,7 @@ public class FeedAdapter extends BaseAdapter {
             playPause.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (posts.get(position).getPerformanceFile() == null) {
+                    if (posts.get(position).getPerformanceFile() == null) { //performance not yet downloaded
                         spinner.setVisibility(View.VISIBLE);
                         playPause.setVisibility(View.GONE);
                         onPlayClickedListener.onPlayClicked(posts.get(position).getId(), new PostListFragment.onDownloadFinished() {
@@ -133,23 +136,27 @@ public class FeedAdapter extends BaseAdapter {
                                         posts.get(position).setAudioPosition(0);
                                         PostListMediaPlayer.getInstance().reset();
                                         isPlaying = false;
+                                        seekBar.setEnabled(true);
                                     }
                                 });
                                 PostListMediaPlayer.getInstance().start(posts.get(position).getAudioPosition());
+                                seekBar.setEnabled(false);
                             }//end on download finished
                         });
-                    } else {
-                        if (isPlaying) {
+                    } else {//performance already downloaded
+                        if (isPlaying) { //on press pause
+                            seekBar.setEnabled(true);
                             playPause.setImageResource(R.drawable.play);
-                            PostListMediaPlayer.getInstance().pause();
-                            posts.get(position).setAudioPosition(PostListMediaPlayer.getInstance().getPosition());
-                            seekBar.setProgress(PostListMediaPlayer.getInstance().getPosition());
-                            isPlaying = false;
-                            return;
-                        } else {
 
-                            playPause.setImageResource(R.drawable.pause);
-                            isPlaying = true;
+                            PostListMediaPlayer.getInstance().pause();
+
+                            int currentPosition = PostListMediaPlayer.getInstance().getPosition();
+                            posts.get(position).setAudioPosition(currentPosition);
+                            seekBar.setProgress(currentPosition);
+
+                            isPlaying = false;
+
+                        } else { //on press play and performance was downloaded
                             PostListMediaPlayer.getInstance().setOnProgressListener(new PostListMediaPlayer.onProgressListener() {
                                 @Override
                                 public void onProgress(int progress) {
@@ -165,10 +172,13 @@ public class FeedAdapter extends BaseAdapter {
                                     posts.get(position).setAudioPosition(0);
                                     PostListMediaPlayer.getInstance().reset();
                                     isPlaying = false;
+                                    seekBar.setEnabled(true);
                                 }
                             });
+                            playPause.setImageResource(R.drawable.pause);
+                            isPlaying = true;
+                            seekBar.setEnabled(false);
                             seekBar.setProgress(posts.get(position).getAudioPosition());
-                            seekBar.setMax(PostListMediaPlayer.getInstance().getSongDuration());
                             PostListMediaPlayer.getInstance().setData(posts.get(position).getPerformanceFile());
                             PostListMediaPlayer.getInstance().start(posts.get(position).getAudioPosition());
                         }

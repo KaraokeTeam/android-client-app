@@ -3,6 +3,7 @@ package com.example.orpriesender.karaoke.model;
 import android.app.Application;
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
+import android.arch.persistence.room.Room;
 import android.content.SharedPreferences;
 import android.util.Log;
 import android.view.Display;
@@ -29,9 +30,12 @@ public class KaraokeRepository {
         return instance;
     }
 
+    /*
+            start user region
+     */
+
     public LiveData<User> getUser(String userId) {
         final MutableLiveData<User> data = new MutableLiveData<>();
-
         ModelFireBase.getInstance().getUser(userId, new ModelFireBase.FirebaseCallback<User>() {
             @Override
             public void onComplete(User user) {
@@ -47,10 +51,46 @@ public class KaraokeRepository {
         return data;
     }
 
+    //add a user to firebase
     public void addUser(User user) {
         ModelFireBase.getInstance().addUser(user);
     }
 
+    /*
+           end user region
+     */
+
+    /*
+        start song region
+    */
+
+    public void addSong(SongItem song){
+        ModelFireBase.getInstance().addSongItem(song);
+    }
+
+    public LiveData<List<SongItem>> getSongsList(){
+        final MutableLiveData<List<SongItem>> data = new MutableLiveData<>();
+        ModelFireBase.getInstance().getSongsList(new ModelFireBase.FirebaseCallback<List<SongItem>>() {
+            @Override
+            public void onComplete(List<SongItem> songItems) {
+                data.setValue(songItems);
+            }
+
+            @Override
+            public void onCancel() {
+                data.setValue(null);
+            }
+        });
+        return data;
+    }
+
+    /*
+            end song region
+     */
+
+    /*
+            start post region
+     */
 
     public LiveData<Post> getPost(String postId) {
         final MutableLiveData<Post> data = new MutableLiveData<>();
@@ -75,11 +115,45 @@ public class KaraokeRepository {
         ModelFireBase.getInstance().addPost(post);
     }
 
+    public LiveData<List<Post>> getAllPosts() {
+        final MutableLiveData<List<Post>> data = new MutableLiveData<>();
+        ModelFireBase.getInstance().getAllPosts(new ModelFireBase.FirebaseCallback<List<Post>>() {
+            @Override
+            public void onComplete(List<Post> posts) {
+                Collections.sort(posts, Collections.reverseOrder(new Comparator<Post>() {
+                    @Override
+                    public int compare(Post o1, Post o2) {
+                        if (o1.getDate() == null || o2.getDate() == null) {
+                            return 0;
+                        }
+                        return o1.getDate().compareTo(o2.getDate());
+                    }
+                }));
+                RoomDatabaseManager.getInstance().updatePosts(posts);
+                data.setValue(RoomDatabaseManager.getInstance().getAllPosts());
+            }
+
+            @Override
+            public void onCancel() {
+                data.setValue(null);//RoomDatabaseManager.getInstance().getAllPosts()
+            }
+        });
+        return data;
+    }
+
+    /*
+            end post region
+     */
+
+    /*
+            file download region
+     */
+
     public void getSourceOnsetFile(String songName, final FirebaseStorageManager.FireBaseStorageDownloadCallback callback) {
 
         File cachedFile = LocalCacheManager.getInstance().getIfExists(songName + "Onsets.txt");
         if (cachedFile != null) {
-            Log.d("LOG", "USING CACHED FILE FOR ONSETS");
+            Log.d("TAG", "USING CACHED FILE FOR ONSETS");
             callback.onSuccess(null, cachedFile);
             return;
         }
@@ -101,7 +175,7 @@ public class KaraokeRepository {
 
         File cachedFile = LocalCacheManager.getInstance().getIfExists(songName + "Pitches.txt");
         if (cachedFile != null) {
-            Log.d("LOG", "USING CACHED FILE FOR PITCHES");
+            Log.d("TAG", "USING CACHED FILE FOR PITCHES");
             callback.onSuccess(null, cachedFile);
             return;
         }
@@ -121,9 +195,9 @@ public class KaraokeRepository {
 
     public void getGroupsForSong(String songName, final FirebaseStorageManager.FireBaseStorageDownloadCallback callback) {
 
-        File cachedFile = LocalCacheManager.getInstance().getIfExists(songName + "Groups.txt");
+        File cachedFile = LocalCacheManager.getInstance().getIfExists(songName + "Groups.json");
         if (cachedFile != null) {
-            Log.d("LOG", "USING CACHED FILE FOR GROUPS");
+            Log.d("TAG", "USING CACHED FILE FOR GROUPS");
             callback.onSuccess(null, cachedFile);
             return;
         }
@@ -142,46 +216,17 @@ public class KaraokeRepository {
     }
 
 
-    public LiveData<List<Post>> getAllPosts() {
-        final MutableLiveData<List<Post>> data = new MutableLiveData<>();
-        ModelFireBase.getInstance().getAllPosts(new ModelFireBase.FirebaseCallback<List<Post>>() {
-                @Override
-                public void onComplete(List<Post> posts) {
 
-                Collections.sort(posts, Collections.reverseOrder(new Comparator<Post>() {
-                    @Override
-                    public int compare(Post o1, Post o2) {
-                        if (o1.getDate() == null || o2.getDate() == null) {
-                            return 0;
-                        }
-                        return o1.getDate().compareTo(o2.getDate());
-                    }
-                }));
-                //RoomDatabaseManager.getInstance().deleteAll();
-                //RoomDatabaseManager.getInstance().addPosts(posts);
-                data.setValue(posts);
-            }
-
-            @Override
-            public void onCancel() {
-                data.setValue(null);//RoomDatabaseManager.getInstance().getAllPosts()
-            }
-        });
-        return data;
-    }
-
-    //using a local cache file if exists, if not getting it from firebase
     public LiveData<File> getPlayback(final String filename) {
         final MutableLiveData<File> data = new MutableLiveData<>();
-
-        File cachedFile = LocalCacheManager.getInstance().getIfExists(filename);
+        File cachedFile = LocalCacheManager.getInstance().getIfExists(filename + ".mp4");
         if (cachedFile != null) {
-            Log.d("LOG", "USING CACHED FILE FOR PLAYBACK");
+            Log.d("TAG", "USING CACHED FILE FOR PLAYBACK");
             data.setValue(cachedFile);
             return data;
         }
 
-        FirebaseStorageManager.getInstance().getPlayback(filename, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+        FirebaseStorageManager.getInstance().getPlayback(filename + ".mp4", new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
                 data.setValue(localFile);
@@ -196,17 +241,12 @@ public class KaraokeRepository {
         return data;
     }
 
-    public void uploadPerformance(String postId, File file, FirebaseStorageManager.FireBaseStorageUploadCallback callback) {
-        FirebaseStorageManager.getInstance().uploadAudioForPost(postId, file, callback);
-    }
-
-    //TODO: untested
     public LiveData<File> downloadPerformance(final String postId) {
         final MutableLiveData<File> data = new MutableLiveData<>();
 
         File cachedFile = LocalCacheManager.getInstance().getIfExists(postId + ".wav");
         if (cachedFile != null) {
-            Log.d("LOG", "USING CACHED FILE FOR PERFORMANCE");
+            Log.d("TAG", "USING CACHED FILE FOR PERFORMANCE");
             data.setValue(cachedFile);
             return data;
         }
@@ -225,4 +265,20 @@ public class KaraokeRepository {
 
         return data;
     }
+
+    /*
+            end file download region
+     */
+
+    /*
+            start file upload region
+     */
+    public void uploadPerformance(String postId, File file, FirebaseStorageManager.FireBaseStorageUploadCallback callback) {
+        FirebaseStorageManager.getInstance().uploadAudioForPost(postId, file, callback);
+    }
+
+    /*
+            end file upload region
+     */
+
 }

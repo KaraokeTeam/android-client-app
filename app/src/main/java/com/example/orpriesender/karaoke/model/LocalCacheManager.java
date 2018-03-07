@@ -36,7 +36,6 @@ public class LocalCacheManager {
 
     public File saveOrUpdate(String filename) {
         if (context != null) {
-            Log.d("TAG","FILE NAME IS : " + filename);
             File cacheFile = new File(context.getCacheDir(), filename);
             if (cacheFile.exists())
                 cacheFile.delete();
@@ -55,6 +54,31 @@ public class LocalCacheManager {
         return null;
     }
 
+
+    public static void destroyCache() {
+        try {
+            File dir = context.getCacheDir();
+            if (dir != null && dir.isDirectory()) {
+                deleteDir(dir);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+        }
+        return dir.delete();
+    }
+}
 
 
 
@@ -75,4 +99,4 @@ and put this in the firebase storage/database function :
  */
 
 
-}
+

@@ -1,5 +1,6 @@
 package com.example.orpriesender.karaoke.model;
 
+import com.example.orpriesender.karaoke.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -72,7 +73,7 @@ public class ModelFireBase {
         });
     }
 
-    void getAllPosts(final FirebaseCallback<List<Post>> callback) {
+    public void getAllPosts(final FirebaseCallback<List<Post>> callback) {
         DatabaseReference ref = FirebaseDatabase.getInstance().getReference("posts");
         ref.addValueEventListener(new ValueEventListener() {
             @Override
@@ -90,11 +91,39 @@ public class ModelFireBase {
                 callback.onCancel();
             }
         });
+
+    }
+
+    public void addSongItem(SongItem song){
+        String postId = FirebaseDatabase.getInstance().getReference("songs").push().getKey();
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("songs");
+        song.setId(postId);
+        ref.child(postId).setValue(song.toMap());
+    }
+
+    public void getSongsList(final FirebaseCallback<List<SongItem>> callback){
+        DatabaseReference ref = FirebaseDatabase.getInstance().getReference("songs");
+        ref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                List<SongItem> songs = new LinkedList<>();
+                for (DataSnapshot snap : dataSnapshot.getChildren()) {
+                    SongItem song = snap.getValue(SongItem.class);
+                    songs.add(song);
+                }
+                callback.onComplete(songs);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                callback.onCancel();
+            }
+        });
+
     }
 
     interface FirebaseCallback<T> {
         void onComplete(T t);
-
         void onCancel();
     }
 }

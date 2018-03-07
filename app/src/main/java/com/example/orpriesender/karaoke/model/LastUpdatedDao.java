@@ -1,6 +1,8 @@
 package com.example.orpriesender.karaoke.model;
 
 import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Delete;
+import android.arch.persistence.room.Insert;
 import android.arch.persistence.room.Query;
 import android.arch.persistence.room.Update;
 
@@ -13,12 +15,15 @@ public interface LastUpdatedDao {
 
     @Query("SELECT * FROM lastUpdated WHERE name like 'local'")
     LastUpdated getLocal();
+
     @Query("SELECT * FROM lastUpdated WHERE name like 'remote'")
     LastUpdated getRemote();
 
-    @Update
-    void updateLocal(LastUpdated lastUpdated);
+    @Insert
+    void insertLastUpdated(LastUpdated lastUpdated);
 
-    @Update
-    void updateRemote(LastUpdated lastUpdated);
+    @Query("DELETE FROM lastUpdated WHERE name LIKE :id")
+    void deleteLastUpdated(String id);
+
+
 }

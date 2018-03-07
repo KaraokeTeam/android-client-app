@@ -5,6 +5,7 @@ package com.example.orpriesender.karaoke.controller;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -46,6 +47,7 @@ public class PostListFragment extends Fragment {
     }
 
 
+
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -58,7 +60,6 @@ public class PostListFragment extends Fragment {
         try {
             onUsernameClickedListener = (onUsernameClicked) getActivity();
             onPlayClickedListener = (onPlayClicked) getActivity();
-
         } catch (ClassCastException c) {
             onUsernameClickedListener = null;
         }
@@ -92,15 +93,15 @@ public class PostListFragment extends Fragment {
 
 
     public interface onUsernameClicked {
-        public void onUsernameClicked(String userId);
+        void onUsernameClicked(String userId);
     }
     //TODO: remove unused
     public interface onPlayClicked {
-        public void onPlayClicked(String postId,onDownloadFinished callback);
+        void onPlayClicked(String postId,onDownloadFinished callback);
     }
 
     public interface onDownloadFinished{
-        public void onDownloadFinished(File file);
+        void onDownloadFinished(File file);
     }
 
 }

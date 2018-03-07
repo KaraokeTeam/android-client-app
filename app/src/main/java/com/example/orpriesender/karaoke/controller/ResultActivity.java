@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -36,7 +38,7 @@ public class ResultActivity extends Activity {
     TextView result_number;
     MediaPlayer player;
     ImageButton play;
-    Button back, publish;
+    Button backToRecord, publish,backToFeed;
     private boolean isPlay = true;
 
     //members received from last activity
@@ -109,12 +111,12 @@ public class ResultActivity extends Activity {
             }
         });
         //configure the back button
-        back = findViewById(R.id.activity_result_restart_button);
-        back.setOnClickListener(new View.OnClickListener() {
+        backToRecord = findViewById(R.id.activity_result_restart_button);
+        backToRecord.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(getApplicationContext(), TarsosActivity.class);
-                startActivity(intent);//TODO : start it with the same song
+                startActivity(intent);
                 finish();
             }
         });
@@ -147,19 +149,19 @@ public class ResultActivity extends Activity {
                         final ProgressBar progressBar = findViewById(R.id.activity_result_progress_bar);
                         progressBar.setProgress(0);
                         progressBar.setVisibility(View.VISIBLE);
-
                         KaraokeRepository.getInstance().uploadPerformance(p.getId(), performanceFile, new FirebaseStorageManager.FireBaseStorageUploadCallback() {
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot task) {
                                 progressBar.setVisibility(View.GONE);
                                 Util.presentToast(getApplicationContext(),ResultActivity.this,"Performance uploaded successfuly", Toast.LENGTH_SHORT);
+                                finish();
                             }
 
                             @Override
                             public void onFailure(Exception e) {
                                 progressBar.setVisibility(View.GONE);
                                 Util.presentToast(getApplicationContext(),ResultActivity.this,"Performance upload failed", Toast.LENGTH_SHORT);
-                                //TODO : delete the post from firebase?
+                                finish();
                             }
 
                             @Override
@@ -176,8 +178,14 @@ public class ResultActivity extends Activity {
                         dialog.cancel();
                     }
                 });
-
                 dialogBuilder.show();
+            }
+        });
+        backToFeed = findViewById(R.id.activity_result_feed_button);
+        backToFeed.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+               ResultActivity.super.onBackPressed();
             }
         });
     }

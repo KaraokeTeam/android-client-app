@@ -20,7 +20,7 @@ public class TarsosViewModelFactory implements ViewModelProvider.Factory {
     @Override
     public <T extends ViewModel> T create(@NonNull Class<T> modelClass) {
         if (modelClass.isAssignableFrom(TarsosViewModel.class)) {
-            return (T) new TarsosViewModel(name + "." + extension);
+            return (T) new TarsosViewModel();//name + extension
         }
         throw new IllegalArgumentException("TarsosViewModel illegal argument");
     }

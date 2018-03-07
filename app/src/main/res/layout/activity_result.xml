@@ -7,6 +7,16 @@
     android:background="@drawable/blue">
 
     <Button
+        android:id="@+id/activity_result_feed_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="Feed"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
         android:id="@+id/activity_result_restart_button"
         style="@android:style/Widget.Button"
         android:layout_width="wrap_content"
@@ -60,8 +70,8 @@
 
     <TextView
         android:id="@+id/result_message"
-        android:layout_width="313dp"
-        android:layout_height="50dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"

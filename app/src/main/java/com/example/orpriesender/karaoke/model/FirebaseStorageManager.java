@@ -35,8 +35,7 @@ public class FirebaseStorageManager {
         try {
             //whatever it is saved in
             StorageReference instance = FirebaseStorage.getInstance().getReference("performances/" + postId + ".wav");
-            final File localFile = File.createTempFile(postId, "wav");
-            localFile.deleteOnExit();
+            final File localFile = File.createTempFile(postId, ".wav");
             instance.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {

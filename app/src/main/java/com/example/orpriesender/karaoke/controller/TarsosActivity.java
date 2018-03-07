@@ -9,6 +9,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -24,13 +25,14 @@ import com.example.orpriesender.karaoke.model.KaraokeRepository;
 import com.example.orpriesender.karaoke.model.Onset;
 import com.example.orpriesender.karaoke.model.Pitch;
 import com.example.orpriesender.karaoke.R;
+import com.example.orpriesender.karaoke.model.SongItem;
 import com.example.orpriesender.karaoke.util.Util;
 import com.example.orpriesender.karaoke.view_model.TarsosViewModel;
-import com.example.orpriesender.karaoke.view_model.TarsosViewModelFactory;
 import com.example.orpriesender.karaoke.model.User;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
+import java.util.List;
 
 import be.tarsos.dsp.AudioEvent;
 import be.tarsos.dsp.onsets.OnsetHandler;
@@ -66,7 +68,7 @@ public class TarsosActivity extends FragmentActivity {
         setContentView(R.layout.tarsos_activity);
 
         //get the needed view elements from the view
-        //dropdown = findViewById(R.id.spinner);
+        dropdown = findViewById(R.id.tarsos_activity_dropdown);
         backButton = findViewById(R.id.tarsos_activity_back_button);
         countdownText = findViewById(R.id.tarsos_activity_countdown_text);
         pitchText = findViewById(R.id.tarsos_activity_pitch_text);
@@ -75,36 +77,57 @@ public class TarsosActivity extends FragmentActivity {
         stopListeningButton = findViewById(R.id.tarsos_activity_stop);
         videoView = findViewById(R.id.tarsos_activity_video);
         this.spinner = findViewById(R.id.tarsos_activity_spinner);
-//
-//        //init the drop down list
-//        String items[] = new String[]{"Eyal Golan - Zlil Meitar","Simple Do Re Mi"};
-//
-//        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<String>(this,R.layout.support_simple_spinner_dropdown_item,items);
-//        dropdown.setAdapter(spinnerAdapter);
-//
 
-        //create a grader with relevant sources
-        this.songName = "zlil";
-        grader = new Grader(getApplicationContext(), songName);
+        //buttons are disabled by until all sources arrive
         startListeningButton.setEnabled(false);
         stopListeningButton.setEnabled(false);
-        spinner.setVisibility(View.VISIBLE);
 
-
-        fetchSources(new DataFetchCallback() {
+        //init the dropdown list
+        tarsosVM = ViewModelProviders.of(this).get(TarsosViewModel.class);
+        tarsosVM.getSongsList().observe(this, new Observer<List<SongItem>>() {
             @Override
-            public void onDataReady(boolean success) {
-                if (success) {
-                    startListeningButton.setEnabled(true);
-                    spinner.setVisibility(View.GONE);
-                    if (videoPath != null) {
-                        videoView.setVideoPath(videoPath);
+            public void onChanged(@Nullable List<SongItem> songItems) {
+                final ArrayAdapter<SongItem> spinnerAdapter = new ArrayAdapter<>(getApplicationContext(),R.layout.simple_spinner_item,songItems);
+                dropdown.setAdapter(spinnerAdapter);
+                dropdown.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override
+                    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        SongItem song = spinnerAdapter.getItem(position);
+                        if(song.getSystemName() == null){
+                            return;
+                        }
+
+
+                        //create a grader with relevant sources
+                        grader = new Grader(getApplicationContext(), song.getSystemName());
+                        spinner.setVisibility(View.VISIBLE);
+                        fetchSources(song.getSystemName(),new DataFetchCallback() {
+                            @Override
+                            public void onDataReady(boolean success) {
+                                if (success) {
+                                    startListeningButton.setEnabled(true);
+                                    spinner.setVisibility(View.GONE);
+                                    dropdown.setVisibility(View.GONE);
+                                    dropdown.setEnabled(false);
+                                    if (videoPath != null) {
+                                        videoView.setVideoPath(videoPath);
+                                    }
+                                } else {
+                                    Util.presentToast(getApplicationContext(),TarsosActivity.this,"Failed downloading required sources", Toast.LENGTH_LONG);
+                                }
+                            }
+                        });
                     }
-                } else {
-                    Util.presentToast(getApplicationContext(),TarsosActivity.this,"Failed downloading required sources", Toast.LENGTH_LONG);
-                }
+
+                    @Override
+                    public void onNothingSelected(AdapterView<?> parent) {
+
+                    }
+                });
             }
         });
+
+
 
 
         //set a pitch handler
@@ -174,7 +197,7 @@ public class TarsosActivity extends FragmentActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TarsosActivity.super.onBackPressed();
+                finish();
             }
         });
     }
@@ -197,9 +220,9 @@ public class TarsosActivity extends FragmentActivity {
         });
     }
 
-    private void fetchSources(DataFetchCallback callback) {
+    private void fetchSources(String filename,DataFetchCallback callback) {
         initGrader(callback);
-        initVideo(callback);
+        initVideo(filename,callback);
     }
 
     private void checkIfReady(DataFetchCallback callback) {
@@ -215,6 +238,7 @@ public class TarsosActivity extends FragmentActivity {
     }
 
     private void initGrader(final DataFetchCallback callback) {
+
         grader.init(new Grader.InitCallback() {
             @Override
             public void onReady(boolean success) {
@@ -229,21 +253,27 @@ public class TarsosActivity extends FragmentActivity {
     }
 
     private void startListening() {
-        Log.d("TAG", "START LISTENING");
-        videoView.start();
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                videoView.start();
+            }
+        }).start();
         analyzer.start();
         grader.start();
     }
 
-    private void initVideo(final DataFetchCallback callback) {
-        TarsosViewModelFactory factory = new TarsosViewModelFactory("zlil", "mp4");
-        tarsosVM = ViewModelProviders.of(this, factory).get(TarsosViewModel.class);
-        tarsosVM.getPlayback().observe(this, new Observer<File>() {
+    private void initVideo(String filename,final DataFetchCallback callback) {
+//        TarsosViewModelFactory factory = new TarsosViewModelFactory("zlil", "mp4");
+        //VM definition was here
+
+        tarsosVM.getPlayback(filename).observe(this, new Observer<File>() {
             @Override
             public void onChanged(@Nullable File file) {
                 if (file != null) {
                     isVideoReady = true;
                     videoPath = file.getPath();
+                    //check if the other source files arrived
                     checkIfReady(callback);
                 }
             }
@@ -264,7 +294,6 @@ public class TarsosActivity extends FragmentActivity {
                 TarsosActivity.this.runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        spinner.setVisibility(View.GONE);
                         final Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
                         intent.putExtra("grade", grade);
                         intent.putExtra("performanceFileName", analyzer.getRecordFileName());
@@ -276,13 +305,13 @@ public class TarsosActivity extends FragmentActivity {
                                 intent.putExtra("uid", user.getId());
                                 intent.putExtra("username", user.getUsername());
                                 startActivity(intent);
+                                spinner.setVisibility(View.GONE);
                                 finish();
                             }
                         });
 
                     }
                 });
-                Log.d("LOG", "grade : " + grade);
             }
         });
         pitchText.setText("0.00");

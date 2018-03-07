@@ -1,9 +1,9 @@
 package com.example.orpriesender.karaoke.model;
 
-import android.arch.persistence.room.Room;
 import android.content.Context;
+import android.util.Log;
 
-import java.sql.Timestamp;
+import java.time.LocalTime;
 import java.util.List;
 
 /**
@@ -15,45 +15,80 @@ public class RoomDatabaseManager {
     private static RoomDatabaseManager instance = new RoomDatabaseManager();
     private static MyRoomDatabase db;
 
-    public static RoomDatabaseManager getInstance(){
+    public static RoomDatabaseManager getInstance() {
         return instance;
     }
 
-    public static void setContext(Context c){
+    public static void setContext(Context c) {
         context = c;
         init();
     }
 
-    private static void init(){
-        db = Room.databaseBuilder(context, MyRoomDatabase.class,"KaraokeDB").build();
+    private static void init() {
+        db = MyRoomDatabase.getInMemoryDatabase(context);
+
     }
 
-    public void updateLocal(){
-        db.lastUpdatedDao().updateLocal(new LastUpdated("local", System.currentTimeMillis()));
+    public void updateLocalTime() {
+        if (db != null) {
+            db.lastUpdatedDao().deleteLastUpdated("local");
+            db.lastUpdatedDao().insertLastUpdated(new LastUpdated("local",System.currentTimeMillis()));
+
+        }
     }
 
-    public void updateRemote(){
-        db.lastUpdatedDao().updateRemote(new LastUpdated("remote",System.currentTimeMillis()));
+    public void updateRemoteTime() {
+        if (db != null) {
+            db.lastUpdatedDao().deleteLastUpdated("remote");
+            db.lastUpdatedDao().insertLastUpdated(new LastUpdated("remote",System.currentTimeMillis()));
+        }
     }
 
-    public double getRemote(){
-        return db.lastUpdatedDao().getRemote().getLastUpdated();
+    public double getRemoteTime() {
+        if (db != null) {
+            LastUpdated remote = db.lastUpdatedDao().getRemote();
+            if(remote != null){
+                return remote.getLastUpdated();
+            }
+
+        }
+        return 0;
     }
 
-    public double getLocal(){
-        return db.lastUpdatedDao().getLocal().getLastUpdated();
+    public double getLocalTime() {
+        if (db != null) {
+            LastUpdated local = db.lastUpdatedDao().getLocal();
+            if(local != null){
+                return local.getLastUpdated();
+            }
+        }
+        return -1;
     }
 
     //TODO : check if the list works, if not replace with Post...posts
-    public void addPosts(List<Post> posts){
+    public void addPosts(List<Post> posts) {
         db.postDao().insertAll(posts);
     }
 
-    public List<Post> getAllPosts(){
+    public List<Post> getAllPosts() {
         return db.postDao().getAllPosts();
     }
 
-    public void deleteAll(){
+    public void deleteAllPosts() {
         db.postDao().deleteAll();
+    }
+
+    //add check for times
+    public void updatePosts(List<Post> posts){
+        db.postDao().deleteAll();
+        db.postDao().insertAll(posts);
+    }
+
+    public List<SongItem> getSongsList() {
+        return db.songItemDao().getSongsList();
+    }
+
+    public void addSong(SongItem song) {
+        db.songItemDao().insertSong(song);
     }
 }

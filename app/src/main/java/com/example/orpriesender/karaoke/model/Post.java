@@ -69,7 +69,7 @@ public class Post implements Serializable {
         this.time = format.format(date);
         this.audioPosition = 0;
     }
-
+    @Ignore
     public Post() {
 
     }

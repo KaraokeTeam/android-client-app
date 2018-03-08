@@ -18,4 +18,10 @@ public interface SongItemDao {
 
     @Insert
     void insertSong(SongItem song);
+
+    @Insert
+    void insertAllSongs(List<SongItem> songs);
+
+    @Query("DELETE FROM songs")
+    void deleteAllSongs();
 }

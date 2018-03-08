@@ -47,7 +47,7 @@ public class TarsosActivity extends FragmentActivity {
         public void onDataReady(boolean success);
     }
 
-    TextView pitchText, noteText, countdownText;
+    TextView pitchText, noteText, countdownText,messageText;
     Button stopListeningButton;
     ImageButton startListeningButton, backButton;
     VideoView videoView;
@@ -76,6 +76,7 @@ public class TarsosActivity extends FragmentActivity {
         startListeningButton = findViewById(R.id.tarsos_activity_start_button);
         stopListeningButton = findViewById(R.id.tarsos_activity_stop);
         videoView = findViewById(R.id.tarsos_activity_video);
+        messageText = findViewById(R.id.tarsos_activity_message_text);
         this.spinner = findViewById(R.id.tarsos_activity_spinner);
 
         //buttons are disabled by until all sources arrive
@@ -97,7 +98,6 @@ public class TarsosActivity extends FragmentActivity {
                             return;
                         }
 
-
                         //create a grader with relevant sources
                         grader = new Grader(getApplicationContext(), song.getSystemName());
                         spinner.setVisibility(View.VISIBLE);
@@ -107,7 +107,6 @@ public class TarsosActivity extends FragmentActivity {
                                 if (success) {
                                     startListeningButton.setEnabled(true);
                                     spinner.setVisibility(View.GONE);
-                                    dropdown.setVisibility(View.GONE);
                                     dropdown.setEnabled(false);
                                     if (videoPath != null) {
                                         videoView.setVideoPath(videoPath);
@@ -178,6 +177,7 @@ public class TarsosActivity extends FragmentActivity {
                 animateVideo(1.0f);
                 startListeningButton.setEnabled(false);
                 stopListeningButton.setEnabled(true);
+                dropdown.setVisibility(View.GONE);
                 startListening();
             }
         });
@@ -188,6 +188,10 @@ public class TarsosActivity extends FragmentActivity {
             public void onClick(View v) {
                 animateVideo(0.0f);
                 animateStartListeningButton(0.0f);
+                pitchText.setVisibility(View.GONE);
+                noteText.setVisibility(View.GONE);
+                messageText.setText("Calculating grade ... ");
+                messageText.setVisibility(View.VISIBLE);
                 startListeningButton.setEnabled(true);
                 stopListeningButton.setEnabled(false);
                 stopListening();

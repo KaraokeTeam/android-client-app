@@ -64,9 +64,9 @@ public class AudioAnalyzer {
                 this.dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 44100, 2048, this.pitchHandler));
             }
             if (onsetHandler != null) {
-                ComplexOnsetDetector onSetDetector = new ComplexOnsetDetector(2048);
-                onSetDetector.setHandler(onsetHandler);
-                this.dispatcher.addAudioProcessor(onSetDetector);
+//                ComplexOnsetDetector onSetDetector = new ComplexOnsetDetector(2048);
+//                onSetDetector.setHandler(onsetHandler);
+//                this.dispatcher.addAudioProcessor(onSetDetector);
             }
         }
     }

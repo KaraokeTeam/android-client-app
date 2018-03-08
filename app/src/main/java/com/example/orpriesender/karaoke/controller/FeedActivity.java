@@ -4,7 +4,6 @@ package com.example.orpriesender.karaoke.controller;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -15,7 +14,6 @@ import com.example.orpriesender.karaoke.model.KaraokeRepository;
 import com.example.orpriesender.karaoke.model.LocalCacheManager;
 import com.example.orpriesender.karaoke.model.Post;
 import com.example.orpriesender.karaoke.model.RoomDatabaseManager;
-import com.example.orpriesender.karaoke.model.SongItem;
 import com.example.orpriesender.karaoke.model.User;
 import com.example.orpriesender.karaoke.view_model.PostListViewModel;
 import com.example.orpriesender.karaoke.R;
@@ -42,7 +40,7 @@ public class FeedActivity extends FragmentActivity implements PostListFragment.o
         KaraokeRepository.getInstance().addUser(new User(FirebaseAuth.getInstance().getCurrentUser()));
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_all_posts);
+        setContentView(R.layout.activity_feed);
         profileButton = findViewById(R.id.all_posts_profile_button);
         singButton = findViewById(R.id.all_posts_sing_button);
         final PostListFragment fragment = (PostListFragment) getSupportFragmentManager().findFragmentById(R.id.list_fragment);

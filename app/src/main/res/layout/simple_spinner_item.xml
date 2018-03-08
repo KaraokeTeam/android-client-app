@@ -6,4 +6,6 @@
     android:id="@+id/spinner_item_text"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:gravity="center"
+    style="@android:style/Widget.TextView.SpinnerItem"
     android:textAlignment="center"/>

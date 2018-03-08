@@ -34,17 +34,23 @@ public class KaraokeRepository {
             start user region
      */
 
-    public LiveData<User> getUser(String userId) {
+    public LiveData<User> getUser(final String userId) {
         final MutableLiveData<User> data = new MutableLiveData<>();
+        User localUser = RoomDatabaseManager.getInstance().getUser(userId);
+        if(localUser != null){
+            Log.d("TAG","Loading user from RoomDB");
+            data.setValue(localUser);
+        }
         ModelFireBase.getInstance().getUser(userId, new ModelFireBase.FirebaseCallback<User>() {
             @Override
             public void onComplete(User user) {
+                RoomDatabaseManager.getInstance().updateOrAddUser(user);
                 data.setValue(user);
             }
 
             @Override
             public void onCancel() {
-                data.setValue(null);
+                data.setValue(RoomDatabaseManager.getInstance().getUser(userId));
             }
         });
 
@@ -70,9 +76,15 @@ public class KaraokeRepository {
 
     public LiveData<List<SongItem>> getSongsList(){
         final MutableLiveData<List<SongItem>> data = new MutableLiveData<>();
+        List<SongItem> localSongsList = RoomDatabaseManager.getInstance().getSongsList();
+        if(localSongsList != null){
+            Log.d("TAG","Loading songs list from RoomDB");
+            data.setValue(localSongsList);
+        }
         ModelFireBase.getInstance().getSongsList(new ModelFireBase.FirebaseCallback<List<SongItem>>() {
             @Override
             public void onComplete(List<SongItem> songItems) {
+                RoomDatabaseManager.getInstance().updateSongsList(songItems);
                 data.setValue(songItems);
             }
 
@@ -117,6 +129,11 @@ public class KaraokeRepository {
 
     public LiveData<List<Post>> getAllPosts() {
         final MutableLiveData<List<Post>> data = new MutableLiveData<>();
+        List<Post> localPosts = RoomDatabaseManager.getInstance().getAllPosts();
+        if(localPosts != null){
+            Log.d("TAG","Loading posts from RoomDB");
+            data.setValue(localPosts);
+        }
         ModelFireBase.getInstance().getAllPosts(new ModelFireBase.FirebaseCallback<List<Post>>() {
             @Override
             public void onComplete(List<Post> posts) {
@@ -130,12 +147,12 @@ public class KaraokeRepository {
                     }
                 }));
                 RoomDatabaseManager.getInstance().updatePosts(posts);
-                data.setValue(RoomDatabaseManager.getInstance().getAllPosts());
+                data.setValue(posts);
             }
 
             @Override
             public void onCancel() {
-                data.setValue(null);//RoomDatabaseManager.getInstance().getAllPosts()
+                data.setValue(RoomDatabaseManager.getInstance().getAllPosts());
             }
         });
         return data;

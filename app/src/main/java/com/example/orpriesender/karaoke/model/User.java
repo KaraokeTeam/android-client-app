@@ -1,14 +1,24 @@
 package com.example.orpriesender.karaoke.model;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
+import android.arch.persistence.room.TypeConverter;
+import android.arch.persistence.room.TypeConverters;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.google.firebase.auth.FirebaseUser;
 
 /**
  * Created by Or Priesender on 10-Jan-18.
  */
 
+@Entity(tableName = "users")
+@TypeConverters(User.class)
 public class User {
+    @PrimaryKey
+    @NonNull
     private String id;
     private String username;
     private Uri imageUrl;
@@ -23,6 +33,20 @@ public class User {
 
     public User() {
 
+    }
+
+    @TypeConverter
+    public static String UriToString(Uri uri){
+        if(uri == null)
+            return null;
+        return uri.toString();
+    }
+
+    @TypeConverter
+    public static Uri StringToUri(String string){
+        if(string == null)
+            return null;
+        return Uri.parse(string);
     }
 
     public String getId() {

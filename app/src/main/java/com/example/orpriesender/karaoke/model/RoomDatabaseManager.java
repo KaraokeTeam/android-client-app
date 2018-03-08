@@ -65,7 +65,6 @@ public class RoomDatabaseManager {
         return -1;
     }
 
-    //TODO : check if the list works, if not replace with Post...posts
     public void addPosts(List<Post> posts) {
         db.postDao().insertAll(posts);
     }
@@ -78,7 +77,6 @@ public class RoomDatabaseManager {
         db.postDao().deleteAll();
     }
 
-    //add check for times
     public void updatePosts(List<Post> posts){
         db.postDao().deleteAll();
         db.postDao().insertAll(posts);
@@ -88,7 +86,31 @@ public class RoomDatabaseManager {
         return db.songItemDao().getSongsList();
     }
 
-    public void addSong(SongItem song) {
-        db.songItemDao().insertSong(song);
+    public void updateSongsList(List<SongItem> songs){
+        db.songItemDao().deleteAllSongs();
+        db.songItemDao().insertAllSongs(songs);
+    }
+    public List<User> getAllUsers(){
+        return db.userDao().getAllUsers();
+    }
+
+    public void updateOrAddUser(User user){
+        User localUser = db.userDao().getUser(user.getId());
+        if(localUser != null){
+            db.userDao().deleteUser(user);
+        }else db.userDao().addUser(user);
+    }
+
+    public void addUser(User user){
+        db.userDao().addUser(user);
+    }
+
+    public void updateUsers(List<User> users){
+        db.userDao().deleteAllUsers();
+        db.userDao().insertAll(users);
+    }
+
+    public User getUser(String id){
+        return db.userDao().getUser(id);
     }
 }

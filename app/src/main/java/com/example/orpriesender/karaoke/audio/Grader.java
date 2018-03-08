@@ -32,8 +32,8 @@ import java.util.concurrent.TimeUnit;
  * Created by aboud on 1/10/2018.
  */
 
+//grading a performance according to source files
 public class Grader {
-
 
     public interface InitCallback {
         void onReady(boolean success);
@@ -325,10 +325,10 @@ public class Grader {
                 stop();
                 if (performancePitches.size() == 0) {
                     callback.onGrade(0);
+                }else{
+                    double grade = 100-(((double) mistakes / ((double) performancePitches.size()))*100);
+                    callback.onGrade(Math.round(grade));
                 }
-                double mistakePercent = ((double) mistakes / ((double) performancePitches.size()));
-                callback.onGrade(mistakePercent);
-
             }
         }).start();
     }

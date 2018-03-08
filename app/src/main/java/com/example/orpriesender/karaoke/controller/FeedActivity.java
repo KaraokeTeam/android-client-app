@@ -88,8 +88,6 @@ public class FeedActivity extends FragmentActivity implements PostListFragment.o
 
     @Override
     public void onPlayClicked(String postId, final PostListFragment.onDownloadFinished callback) {
-        //check cache
-
         KaraokeRepository.getInstance().downloadPerformance(postId).observe(this, new Observer<File>() {
             @Override
             public void onChanged(@Nullable File file) {

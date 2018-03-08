@@ -18,6 +18,7 @@ import java.io.IOException;
  * Created by Or Priesender on 03-Feb-18.
  */
 
+//singleton class to handle firebase storage
 public class FirebaseStorageManager {
 
     private static FirebaseStorageManager instance = new FirebaseStorageManager();

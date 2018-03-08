@@ -67,7 +67,6 @@ public class FeedAdapter extends BaseAdapter {
             convertView = inflater.inflate(R.layout.feed_item_layout, null);
         }
 
-
         //ImageView image = convertView.findViewById(R.id.user_image);
         TextView username = convertView.findViewById(R.id.username);
         TextView description = convertView.findViewById(R.id.description);

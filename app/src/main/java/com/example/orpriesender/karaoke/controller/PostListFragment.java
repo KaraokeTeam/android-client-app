@@ -26,6 +26,7 @@ import java.util.List;
  * Created by Or Priesender on 03-Feb-18.
  */
 
+//used in both user profile post list and feed post list
 public class PostListFragment extends Fragment {
 
     private List<Post> posts;
@@ -95,7 +96,7 @@ public class PostListFragment extends Fragment {
     public interface onUsernameClicked {
         void onUsernameClicked(String userId);
     }
-    //TODO: remove unused
+
     public interface onPlayClicked {
         void onPlayClicked(String postId,onDownloadFinished callback);
     }

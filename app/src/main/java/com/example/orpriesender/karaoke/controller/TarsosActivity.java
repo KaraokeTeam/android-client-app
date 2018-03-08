@@ -97,7 +97,7 @@ public class TarsosActivity extends FragmentActivity {
                         if(song.getSystemName() == null){
                             return;
                         }
-
+                        songName = song.getSystemName();
                         //create a grader with relevant sources
                         grader = new Grader(getApplicationContext(), song.getSystemName());
                         spinner.setVisibility(View.VISIBLE);
@@ -168,7 +168,6 @@ public class TarsosActivity extends FragmentActivity {
         analyzer.init();
 
         //start listening
-        //activates a timer and starts listening to singer
         startListeningButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -303,9 +302,11 @@ public class TarsosActivity extends FragmentActivity {
                         intent.putExtra("performanceFileName", analyzer.getRecordFileName());
                         intent.putExtra("song", songName);
                         intent.putExtra("performanceFile", analyzer.getRecordFile());
+                        Log.d("TAG","starting result activity");
                         KaraokeRepository.getInstance().getUser(FirebaseAuth.getInstance().getUid()).observe(TarsosActivity.this, new Observer<User>() {
                             @Override
                             public void onChanged(@Nullable User user) {
+
                                 intent.putExtra("uid", user.getId());
                                 intent.putExtra("username", user.getUsername());
                                 startActivity(intent);

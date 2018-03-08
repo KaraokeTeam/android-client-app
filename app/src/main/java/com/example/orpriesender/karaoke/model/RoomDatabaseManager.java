@@ -29,41 +29,6 @@ public class RoomDatabaseManager {
 
     }
 
-    public void updateLocalTime() {
-        if (db != null) {
-            db.lastUpdatedDao().deleteLastUpdated("local");
-            db.lastUpdatedDao().insertLastUpdated(new LastUpdated("local",System.currentTimeMillis()));
-
-        }
-    }
-
-    public void updateRemoteTime() {
-        if (db != null) {
-            db.lastUpdatedDao().deleteLastUpdated("remote");
-            db.lastUpdatedDao().insertLastUpdated(new LastUpdated("remote",System.currentTimeMillis()));
-        }
-    }
-
-    public double getRemoteTime() {
-        if (db != null) {
-            LastUpdated remote = db.lastUpdatedDao().getRemote();
-            if(remote != null){
-                return remote.getLastUpdated();
-            }
-
-        }
-        return 0;
-    }
-
-    public double getLocalTime() {
-        if (db != null) {
-            LastUpdated local = db.lastUpdatedDao().getLocal();
-            if(local != null){
-                return local.getLastUpdated();
-            }
-        }
-        return -1;
-    }
 
     public void addPosts(List<Post> posts) {
         db.postDao().insertAll(posts);

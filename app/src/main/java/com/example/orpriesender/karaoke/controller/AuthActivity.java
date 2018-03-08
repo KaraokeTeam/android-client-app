@@ -20,7 +20,7 @@ import java.util.List;
  * Created by Or Priesender on 23-Dec-17.
  */
 
-
+//authenticating a user through firebase
 public class AuthActivity extends Activity {
     private static final int RC_SIGN_IN = 123;
 

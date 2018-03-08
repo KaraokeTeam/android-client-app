@@ -53,7 +53,6 @@ public class KaraokeRepository {
                 data.setValue(RoomDatabaseManager.getInstance().getUser(userId));
             }
         });
-
         return data;
     }
 

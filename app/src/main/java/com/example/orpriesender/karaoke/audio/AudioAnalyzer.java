@@ -1,15 +1,11 @@
 package com.example.orpriesender.karaoke.audio;
 
 import android.net.Uri;
-import android.util.Log;
-
 import com.example.orpriesender.karaoke.model.LocalCacheManager;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.RandomAccessFile;
 import java.nio.ByteOrder;
-
 import be.tarsos.dsp.AudioDispatcher;
 import be.tarsos.dsp.AudioProcessor;
 import be.tarsos.dsp.io.TarsosDSPAudioFormat;
@@ -24,6 +20,7 @@ import be.tarsos.dsp.writer.WriterProcessor;
  * Created by Or Priesender on 19-Jan-18.
  */
 
+//analyzing audio files
 public class AudioAnalyzer {
 
     private AudioDispatcher dispatcher;
@@ -64,9 +61,9 @@ public class AudioAnalyzer {
                 this.dispatcher.addAudioProcessor(new PitchProcessor(PitchProcessor.PitchEstimationAlgorithm.FFT_YIN, 44100, 2048, this.pitchHandler));
             }
             if (onsetHandler != null) {
-//                ComplexOnsetDetector onSetDetector = new ComplexOnsetDetector(2048);
-//                onSetDetector.setHandler(onsetHandler);
-//                this.dispatcher.addAudioProcessor(onSetDetector);
+                ComplexOnsetDetector onSetDetector = new ComplexOnsetDetector(2048);
+                onSetDetector.setHandler(onsetHandler);
+                this.dispatcher.addAudioProcessor(onSetDetector);
             }
         }
     }

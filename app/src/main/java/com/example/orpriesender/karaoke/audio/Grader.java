@@ -299,10 +299,6 @@ public class Grader {
                 grade += groups.get(iterator).getGroupGrade();
                 iterator++;
                 currentGroup = groups.get(iterator);
-            }else//between groups (times)
-            {
-                groups.get(iterator).addToWrongSamples(pitch);
-                groups.get(iterator).addMistakes(1);
             }
         }
         //the iterator and currentGroup pointing on the right group (time)
@@ -375,7 +371,8 @@ public class Grader {
                 if (performancePitches.size() == 0) {
                     callback.onGrade(0);
                 }else{
-                    double grade = 100-(((double) mistakes / ((double) performancePitches.size()))*100);
+                    double performanceRate = 100 / (groups.get(iterator).getEndTime() / groups.get(groups.size()-1).getEndTime());
+                    grade *= performanceRate;
                     callback.onGrade(Math.round(grade));
                 }
             }

@@ -219,7 +219,8 @@ public class Grader {
                     try {
                         Pitch p = queue.poll(1, TimeUnit.SECONDS);
                         if (p != null) {
-                            consumePitch(p);
+                            //consumePitch(p);
+                            newAlgorithm(p);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -258,7 +259,7 @@ public class Grader {
     }
 
     //save the current given pitch and analyze it
-    public void consumePitch(Pitch pitch) {
+   /* public void consumePitch(Pitch pitch) {
         boolean correct = false;
         boolean halfCorrect = false;
         if (pitch.getPitch() == -1)
@@ -284,7 +285,7 @@ public class Grader {
                 mistakes++;
             }
         }
-    }
+    }*/
 
     public void newAlgorithm(Pitch pitch) {
         if (pitch.getPitch() == -1)

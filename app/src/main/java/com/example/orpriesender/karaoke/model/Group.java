@@ -1,5 +1,7 @@
 package com.example.orpriesender.karaoke.model;
 
+import java.util.List;
+
 /**
  * Created by Or Priesender on 26-Feb-18.
  */
@@ -11,8 +13,15 @@ public class Group {
     private float startTime;
     private float endTime;
     private int samplesAmount;
-    private float fillRate;
+    private float fillRate; //the rate of this group from the whole song
     private float duration;
+    private List<Pitch> wrongSamples;
+    private List<Pitch> rightSamples;
+    private double mistakes=0;
+    private double success=0;
+    private double groupGrade=0;
+    private double mistakesRate = 0.5;
+    private double successRate = 1 - mistakesRate;
 
     public Note getNote() {
         return note;
@@ -60,6 +69,41 @@ public class Group {
 
     public void setDuration(float duration) {
         this.duration = duration;
+    }
+
+    public void addToWrongSamples (Pitch pitch)
+    {
+        wrongSamples.add(pitch);
+    }
+
+    public void addToRightSamples (Pitch pitch)
+    {
+        rightSamples.add(pitch);
+    }
+
+    public void addSuccess(double s)
+    {
+        success+=s;
+    }
+
+    public void addMistakes(double s)
+    {
+        mistakes+=s;
+    }
+
+    public void calculateGrade()
+    {
+        double goodGrade = 100*(success/samplesAmount);
+        double badGrade = 100 - (100*(mistakes/samplesAmount));
+        if(goodGrade>100){goodGrade = 100;}
+        if(badGrade<0) {badGrade = 0;}
+        goodGrade *= successRate;
+        badGrade *= mistakesRate;
+        groupGrade = goodGrade + badGrade;
+    }
+
+    public double getGroupGrade() {
+        return groupGrade;
     }
 
     @Override

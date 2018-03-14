@@ -47,6 +47,9 @@ public class Grader {
     private List<Onset> sourceOnsets = null;
     private List<Pitch> performancePitches;
     private List<Onset> performanceOnsets;
+    private int iterator;
+    private double grade;
+
     //the application context
     private Context context;
     //notes table
@@ -101,6 +104,8 @@ public class Grader {
         this.performancePitches = new LinkedList<>();
         this.mistakes = 0;
         this.keepGoing = true;
+        this.grade=0;
+        this.iterator = 0;
 
         if (!onsetsCompleted) {
             KaraokeRepository.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
@@ -277,6 +282,50 @@ public class Grader {
                 mistakes += 0.5;
             } else {
                 mistakes++;
+            }
+        }
+    }
+
+    public void newAlgorithm(Pitch pitch) {
+        if (pitch.getPitch() == -1)
+            return;
+        Note given = getNoteFromHz(pitch.getPitch());
+        Group currentGroup = groups.get(iterator);
+        if (pitch.getEnd() > currentGroup.getEndTime() )
+        {
+            //moving to the next group
+            if(pitch.getStart() > groups.get(iterator+1).getStartTime()) {
+                groups.get(iterator).calculateGrade();
+                grade += groups.get(iterator).getGroupGrade();
+                iterator++;
+                currentGroup = groups.get(iterator);
+            }else//between groups (times)
+            {
+                groups.get(iterator).addToWrongSamples(pitch);
+                groups.get(iterator).addMistakes(1);
+            }
+        }
+        //the iterator and currentGroup pointing on the right group (time)
+        //and now we start to compare the sample
+        if(given.equals(currentGroup))
+        {
+            //if you song correctly
+            groups.get(iterator).addToRightSamples(pitch);
+            groups.get(iterator).addSuccess(1);
+        }else
+        {
+            //if you song incorrectly
+
+            if(given.distance(currentGroup.getNote()) == 1 || given.distance(currentGroup.getNote()) == 11)
+            {
+                //check if the sample is a "Neighbor" note
+                groups.get(iterator).addToWrongSamples(pitch);
+                groups.get(iterator).addMistakes(0.5);
+            }else
+            {
+                //it's a bad mistake
+                groups.get(iterator).addToRightSamples(pitch);
+                groups.get(iterator).addSuccess(1);
             }
         }
     }

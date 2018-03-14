@@ -303,7 +303,7 @@ public class Grader {
         }
         //the iterator and currentGroup pointing on the right group (time)
         //and now we start to compare the sample
-        if(given.equals(currentGroup))
+        if(given.equals(currentGroup.getNote()))
         {
             //if you song correctly
             groups.get(iterator).addToRightSamples(pitch);

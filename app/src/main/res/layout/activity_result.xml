@@ -44,9 +44,9 @@
         android:background="@android:drawable/btn_default"
         android:text="Publish"
         app:layout_constraintBottom_toTopOf="@+id/activity_result_restart_button"
-        app:layout_constraintEnd_toEndOf="@+id/play"
-        app:layout_constraintStart_toStartOf="@+id/play"
-        app:layout_constraintTop_toBottomOf="@+id/play" />
+        app:layout_constraintEnd_toEndOf="@+id/activity_result_play"
+        app:layout_constraintStart_toStartOf="@+id/activity_result_play"
+        app:layout_constraintTop_toBottomOf="@+id/activity_result_play" />
 
     <TextView
         android:id="@+id/result_number"
@@ -62,7 +62,7 @@
         android:textColor="@android:color/darker_gray"
         android:textSize="25sp"
         android:textStyle="bold"
-        app:layout_constraintBottom_toTopOf="@+id/play"
+        app:layout_constraintBottom_toTopOf="@+id/activity_result_play"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent"
@@ -89,7 +89,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
-        android:id="@+id/play"
+        android:id="@+id/activity_result_play"
         android:layout_width="97dp"
         android:layout_height="62dp"
         android:layout_marginBottom="8dp"

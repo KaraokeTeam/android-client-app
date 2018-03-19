@@ -1,14 +1,15 @@
 package com.example.orpriesender.karaoke.controller;
 
-import android.app.Activity;
 import android.app.AlertDialog;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Message;
+import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -23,7 +24,11 @@ import com.example.orpriesender.karaoke.model.FirebaseStorageManager;
 import com.example.orpriesender.karaoke.model.KaraokeRepository;
 import com.example.orpriesender.karaoke.model.Post;
 import com.example.orpriesender.karaoke.R;
+import com.example.orpriesender.karaoke.model.User;
 import com.example.orpriesender.karaoke.util.Util;
+import com.example.orpriesender.karaoke.view_model.ResultViewModel;
+import com.example.orpriesender.karaoke.view_model.ResultViewModelFactory;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
@@ -33,12 +38,13 @@ import java.io.IOException;
  * Created by Or Priesender on 11-Dec-17.
  */
 
-public class ResultActivity extends Activity {
+public class ResultActivity extends FragmentActivity {
 
     TextView result_number;
     MediaPlayer player;
     ImageButton play;
     Button backToRecord, publish,backToFeed;
+    ProgressBar spinner;
     private boolean isPlay = true;
 
     //members received from last activity
@@ -46,6 +52,8 @@ public class ResultActivity extends Activity {
     String performanceFileName, userId, username, songName;
     int performanceLength;
     File performanceFile;
+
+    ResultViewModel vm;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,16 +67,29 @@ public class ResultActivity extends Activity {
         performanceFileName = intent.getStringExtra("performanceFileName");
         result = intent.getDoubleExtra("grade", 0);
         userId = intent.getStringExtra("uid");
-        username = intent.getStringExtra("username");
         songName = intent.getStringExtra("song");
 
+        //get the username from the view model and disable the publish button
+        publish = findViewById(R.id.activity_result_publish_button);
+        publish.setEnabled(false);
+
+        ResultViewModelFactory factory = new ResultViewModelFactory(FirebaseAuth.getInstance().getUid());
+        vm = ViewModelProviders.of(this,factory).get(ResultViewModel.class);
+        vm.getUser().observe(this, new Observer<User>() {
+            @Override
+            public void onChanged(@Nullable User user) {
+                publish.setEnabled(true);
+
+                username = user.getUsername();
+            }
+        });
 
         //set the text according to the information received
         result_number = findViewById(R.id.result_number);
         result_number.setText(String.valueOf(result));
 
         //configure the play button
-        play = findViewById(R.id.play);
+        play = findViewById(R.id.activity_result_play);
         play.setEnabled(false);
         play.setBackgroundColor(getResources().getColor(R.color.fui_transparent));
 

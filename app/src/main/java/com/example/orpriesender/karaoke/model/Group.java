@@ -1,6 +1,12 @@
 package com.example.orpriesender.karaoke.model;
 
+import android.support.annotation.NonNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * Created by Or Priesender on 26-Feb-18.
@@ -17,11 +23,21 @@ public class Group {
     private float duration;
     private List<Pitch> wrongSamples;
     private List<Pitch> rightSamples;
-    private double mistakes=0;
-    private double success=0;
-    private double groupGrade=0;
-    private double mistakesRate = 0.5;
-    private double successRate = 1 - mistakesRate;
+    private double mistakes;
+    private double success;
+    private double groupGrade;
+    private double mistakesRate;
+    private double successRate;
+
+    public Group(){
+        mistakes = 0;
+        success = 0;
+        groupGrade = 0;
+        mistakesRate = 0.5;
+        successRate = 1-mistakesRate;
+        wrongSamples = new ArrayList<>();
+        rightSamples = new ArrayList<>();
+    }
 
     public Note getNote() {
         return note;
@@ -100,6 +116,58 @@ public class Group {
         goodGrade *= successRate;
         badGrade *= mistakesRate;
         groupGrade = goodGrade + badGrade;
+    }
+
+    public List<Pitch> getWrongSamples() {
+        return wrongSamples;
+    }
+
+    public void setWrongSamples(List<Pitch> wrongSamples) {
+        this.wrongSamples = wrongSamples;
+    }
+
+    public List<Pitch> getRightSamples() {
+        return rightSamples;
+    }
+
+    public void setRightSamples(List<Pitch> rightSamples) {
+        this.rightSamples = rightSamples;
+    }
+
+    public double getMistakes() {
+        return mistakes;
+    }
+
+    public void setMistakes(double mistakes) {
+        this.mistakes = mistakes;
+    }
+
+    public double getSuccess() {
+        return success;
+    }
+
+    public void setSuccess(double success) {
+        this.success = success;
+    }
+
+    public void setGroupGrade(double groupGrade) {
+        this.groupGrade = groupGrade;
+    }
+
+    public double getMistakesRate() {
+        return mistakesRate;
+    }
+
+    public void setMistakesRate(double mistakesRate) {
+        this.mistakesRate = mistakesRate;
+    }
+
+    public double getSuccessRate() {
+        return successRate;
+    }
+
+    public void setSuccessRate(double successRate) {
+        this.successRate = successRate;
     }
 
     public double getGroupGrade() {

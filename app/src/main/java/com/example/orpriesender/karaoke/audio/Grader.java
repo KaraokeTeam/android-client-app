@@ -3,15 +3,14 @@ package com.example.orpriesender.karaoke.audio;
 import android.content.Context;
 import android.util.Log;
 
+import com.example.orpriesender.karaoke.file_readers.GroupReader;
+import com.example.orpriesender.karaoke.file_readers.ReaderCallback;
 import com.example.orpriesender.karaoke.model.FirebaseStorageManager;
 import com.example.orpriesender.karaoke.model.Group;
-import com.example.orpriesender.karaoke.file_readers.GroupReader;
 import com.example.orpriesender.karaoke.model.KaraokeRepository;
 import com.example.orpriesender.karaoke.model.Note;
 import com.example.orpriesender.karaoke.model.Onset;
-import com.example.orpriesender.karaoke.file_readers.OnsetReader;
 import com.example.orpriesender.karaoke.model.Pitch;
-import com.example.orpriesender.karaoke.file_readers.PitchReader;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.storage.FileDownloadTask;
 
@@ -104,61 +103,70 @@ public class Grader {
         this.performancePitches = new LinkedList<>();
         this.mistakes = 0;
         this.keepGoing = true;
-        this.grade=0;
+        this.grade = 0;
         this.iterator = 0;
 
-        if (!onsetsCompleted) {
-            KaraokeRepository.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
-                    sourceOnsets = OnsetReader.readOnsetsFromFile(localFile);
-                    onsetsCompleted = true;
-                    checkIfReady(callback);
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    errorMode = true;
-                    onsetsCompleted = true;
-                    checkIfReady(callback);
-
-                }
-            });
-        }
-
-        if (!pitchesCompleted) {
-            KaraokeRepository.getInstance().getSourcePitchFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
-                @Override
-                public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
-                    sourcePitches = PitchReader.readPitchesFromFile(localFile);
-                    pitchesCompleted = true;
-                    checkIfReady(callback);
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    errorMode = true;
-                    pitchesCompleted = true;
-                    checkIfReady(callback);
-                }
-            });
-        }
+//        if (!onsetsCompleted) {
+//            KaraokeRepository.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+//                @Override
+//                public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+//                    sourceOnsets = OnsetReader.readOnsetsFromFile(localFile);
+//                    onsetsCompleted = true;
+//                    checkIfReady(callback);
+//                }
+//
+//                @Override
+//                public void onFailure(Exception e) {
+//                    errorMode = true;
+//                    onsetsCompleted = true;
+//                    checkIfReady(callback);
+//                }
+//            });
+//        }
+//
+//        if (!pitchesCompleted) {
+//            KaraokeRepository.getInstance().getSourcePitchFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+//                @Override
+//                public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+//                    double now = System.currentTimeMillis();
+//                    sourcePitches = PitchReader.readPitchesFromFile(localFile);
+//                    Log.d("TAG","reading pitches took " + (System.currentTimeMillis() - now));
+//                    pitchesCompleted = true;
+//                    checkIfReady(callback);
+//                }
+//
+//                @Override
+//                public void onFailure(Exception e) {
+//                    errorMode = true;
+//                    pitchesCompleted = true;
+//                    checkIfReady(callback);
+//                }
+//            });
+//        }
 
 
         if (!groupsCompleted) {
             KaraokeRepository.getInstance().getGroupsForSong(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
                 @Override
                 public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
-                    groups = GroupReader.readGroupsFromFile(localFile);
-                    groupsCompleted = true;
-                    checkIfReady(callback);
+                    GroupReader.readGroupsFromFile(localFile, new ReaderCallback<Group>() {
+                        @Override
+                        public void onReadingFinished(List<Group> results) {
+                            groups = results;
+                            groupsCompleted = true;
+                            callback.onReady(true);
+                        }
+                    });
+
+                    //checkIfReady(callback);
                 }
 
                 @Override
                 public void onFailure(Exception e) {
                     e.printStackTrace();
                     groupsCompleted = true;
-                    checkIfReady(callback);
+                    callback.onReady(false);
+                    //checkIfReady(callback);
                 }
             });
         }
@@ -259,7 +267,7 @@ public class Grader {
     }
 
     //save the current given pitch and analyze it
-   /* public void consumePitch(Pitch pitch) {
+    public void consumePitch(Pitch pitch) {
         boolean correct = false;
         boolean halfCorrect = false;
         if (pitch.getPitch() == -1)
@@ -269,6 +277,7 @@ public class Grader {
             Pitch sourcePitch = sourcePitches.get(i);
             Note given = getNoteFromHz(pitch.getPitch());
             Note source = getNoteFromHz(sourcePitch.getPitch());
+
             if (given.equals(source) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 0.1)) {
                 currentOffset = i;
                 correct = true;
@@ -285,17 +294,18 @@ public class Grader {
                 mistakes++;
             }
         }
-    }*/
+    }
 
     public void newAlgorithm(Pitch pitch) {
         if (pitch.getPitch() == -1)
             return;
+        performancePitches.add(pitch);
         Note given = getNoteFromHz(pitch.getPitch());
         Group currentGroup = groups.get(iterator);
-        if (pitch.getEnd() > currentGroup.getEndTime() )
-        {
+        if (pitch.getEnd() > currentGroup.getEndTime()) {
             //moving to the next group
-            if(pitch.getStart() > groups.get(iterator+1).getStartTime()) {
+            if (pitch.getStart() > groups.get(iterator + 1).getStartTime()) {
+                Log.d("TAG", "OPENING NEW GROUP ");
                 groups.get(iterator).calculateGrade();
                 grade += groups.get(iterator).getGroupGrade();
                 iterator++;
@@ -304,22 +314,19 @@ public class Grader {
         }
         //the iterator and currentGroup pointing on the right group (time)
         //and now we start to compare the sample
-        if(given.equals(currentGroup.getNote()))
-        {
+        Log.d("TAG","given note is : " + given.toString() + " current note is : " + currentGroup.getNote().toString());
+        if (given.equals(currentGroup.getNote())) {
             //if you song correctly
             groups.get(iterator).addToRightSamples(pitch);
             groups.get(iterator).addSuccess(1);
-        }else
-        {
+        } else {
             //if you song incorrectly
 
-            if(given.distance(currentGroup.getNote()) == 1 || given.distance(currentGroup.getNote()) == 11)
-            {
+            if (given.distance(currentGroup.getNote()) == 1 || given.distance(currentGroup.getNote()) == 11) {
                 //check if the sample is a "Neighbor" note
                 groups.get(iterator).addToWrongSamples(pitch);
                 groups.get(iterator).addMistakes(0.5);
-            }else
-            {
+            } else {
                 //it's a bad mistake
                 groups.get(iterator).addToRightSamples(pitch);
                 groups.get(iterator).addSuccess(1);
@@ -364,19 +371,27 @@ public class Grader {
         }
     }
 
-    public void getGrade(final GradeCallback callback) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                stop();
-                if (performancePitches.size() == 0) {
-                    callback.onGrade(0);
-                }else{
-                    double performanceRate = 100 / (groups.get(iterator).getEndTime() / groups.get(groups.size()-1).getEndTime());
-                    grade *= performanceRate;
-                    callback.onGrade(Math.round(grade));
-                }
-            }
-        }).start();
+    public double getGrade() {
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                stop();
+//                if (performancePitches.size() == 0) {
+//                    callback.onGrade(0);
+//                }else{
+//                    double performanceRate = 100 / (groups.get(iterator).getEndTime() / groups.get(groups.size()-1).getEndTime());
+//                    grade *= performanceRate;
+//                    callback.onGrade(Math.round(grade));
+//                }
+//            }
+//        }).start();
+        if (performancePitches.size() == 0) {
+            return 0;
+        } else {
+            double performanceRate = 100 / (groups.get(iterator).getEndTime() / groups.get(groups.size() - 1).getEndTime());
+            grade *= performanceRate;
+            Log.d("TAG","grade from grader is : " + grade);
+            return grade;
+        }
     }
 }

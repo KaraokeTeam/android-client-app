@@ -1,5 +1,7 @@
 package com.example.orpriesender.karaoke.file_readers;
 
+import android.os.AsyncTask;
+
 import com.example.orpriesender.karaoke.model.Group;
 import com.example.orpriesender.karaoke.model.Note;
 import com.google.gson.JsonArray;
@@ -20,34 +22,41 @@ import java.util.List;
 
 public class GroupReader {
 
-    public static List<Group> readGroupsFromFile(File file) {
-        List<Group> result = new ArrayList<>();
-        JsonParser parser = new JsonParser();
-        try {
-            Object object = parser.parse(new FileReader(file));
-            JsonObject jsonObj = (JsonObject) object;
+    public static void readGroupsFromFile(final File file, final ReaderCallback<Group> callback) {
 
-            JsonArray groups = (JsonArray) jsonObj.get("groups");
-            Iterator<JsonElement> i = groups.iterator();
-            while (i.hasNext()) {
-                Group group = new Group();
-                JsonObject arrayElement = (JsonObject) i.next();
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Group> result = new ArrayList<>();
+                JsonParser parser = new JsonParser();
+                try {
+                    Object object = parser.parse(new FileReader(file));
+                    JsonObject jsonObj = (JsonObject) object;
 
-                group.setSamplesAmount(Integer.parseInt(arrayElement.get("amount").getAsString()));
-                group.setDuration(Float.parseFloat(arrayElement.get("duration").getAsString()));
-                group.setEndTime(Float.parseFloat(arrayElement.get("end").getAsString()));
-                group.setStartTime(Float.parseFloat(arrayElement.get("start").getAsString()));
-                group.setFillRate(Float.parseFloat(arrayElement.get("note_value").getAsString()));
-                group.setNote(new Note(arrayElement.get("note").getAsString()));
-                result.add(group);
+                    JsonArray groups = (JsonArray) jsonObj.get("groups");
+                    Iterator<JsonElement> i = groups.iterator();
+                    while (i.hasNext()) {
+                        Group group = new Group();
+                        JsonObject arrayElement = (JsonObject) i.next();
+
+                        group.setSamplesAmount(Integer.parseInt(arrayElement.get("amount").getAsString()));
+                        group.setDuration(Float.parseFloat(arrayElement.get("duration").getAsString()));
+                        group.setEndTime(Float.parseFloat(arrayElement.get("end").getAsString()));
+                        group.setStartTime(Float.parseFloat(arrayElement.get("start").getAsString()));
+                        group.setFillRate(Float.parseFloat(arrayElement.get("note_value").getAsString()));
+                        group.setNote(new Note(arrayElement.get("note").getAsString()));
+                        result.add(group);
+                    }
+
+                    callback.onReadingFinished(result);
+
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
             }
+        });
 
-            return result;
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        return null;
     }
+
+
 }

@@ -210,10 +210,8 @@ public class KaraokeRepository {
     }
 
     public void getGroupsForSong(String songName, final FirebaseStorageManager.FireBaseStorageDownloadCallback callback) {
-
         File cachedFile = LocalCacheManager.getInstance().getIfExists(songName + "Groups.json");
         if (cachedFile != null) {
-            Log.d("TAG", "USING CACHED FILE FOR GROUPS");
             callback.onSuccess(null, cachedFile);
             return;
         }

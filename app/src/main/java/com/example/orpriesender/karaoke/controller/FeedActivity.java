@@ -14,6 +14,7 @@ import com.example.orpriesender.karaoke.model.KaraokeRepository;
 import com.example.orpriesender.karaoke.model.LocalCacheManager;
 import com.example.orpriesender.karaoke.model.Post;
 import com.example.orpriesender.karaoke.model.RoomDatabaseManager;
+import com.example.orpriesender.karaoke.model.SongItem;
 import com.example.orpriesender.karaoke.model.User;
 import com.example.orpriesender.karaoke.view_model.PostListViewModel;
 import com.example.orpriesender.karaoke.R;
@@ -37,7 +38,9 @@ public class FeedActivity extends FragmentActivity implements PostListFragment.o
         LocalCacheManager.setContext(getApplicationContext());
         RoomDatabaseManager.setContext(getApplicationContext());
 
+        //after a user logged in - add it to users list or update it
         KaraokeRepository.getInstance().addUser(new User(FirebaseAuth.getInstance().getCurrentUser()));
+
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_feed);

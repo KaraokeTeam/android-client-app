@@ -4,6 +4,7 @@ package com.example.orpriesender.karaoke.controller;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
@@ -29,6 +30,7 @@ import com.example.orpriesender.karaoke.model.SongItem;
 import com.example.orpriesender.karaoke.util.Util;
 import com.example.orpriesender.karaoke.view_model.TarsosViewModel;
 import com.example.orpriesender.karaoke.model.User;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.firebase.auth.FirebaseAuth;
 
 import java.io.File;
@@ -95,9 +97,11 @@ public class TarsosActivity extends FragmentActivity {
                     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         SongItem song = spinnerAdapter.getItem(position);
                         if(song.getSystemName() == null){
+                            Log.d("TAG","system name is null");
                             return;
                         }
                         songName = song.getSystemName();
+                        Log.d("TAG","system name is " + songName);
                         //create a grader with relevant sources
                         grader = new Grader(getApplicationContext(), song.getSystemName());
                         spinner.setVisibility(View.VISIBLE);
@@ -228,31 +232,36 @@ public class TarsosActivity extends FragmentActivity {
         initVideo(filename,callback);
     }
 
-    private void checkIfReady(DataFetchCallback callback) {
+    private void checkIfReady(final DataFetchCallback callback) {
         synchronized (this) {
             if (isVideoReady && isGraderReady) {
                 if (videoView == null || grader == null) {
-                    callback.onDataReady(false);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onDataReady(false);
+                        }
+                    });
                 } else {
-                    callback.onDataReady(true);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            callback.onDataReady(true);
+                        }
+                    });
                 }
             }
         }
     }
 
     private void initGrader(final DataFetchCallback callback) {
-
-        grader.init(new Grader.InitCallback() {
-            @Override
-            public void onReady(boolean success) {
-                isGraderReady = true;
-                if (!success) {
-                    checkIfReady(callback);
-                } else {
-                    checkIfReady(callback);
-                }
-            }
-        });
+                grader.init(new Grader.InitCallback() {
+                    @Override
+                    public void onReady(boolean success) {
+                        isGraderReady = true;
+                        checkIfReady(callback);
+                    }
+                });
     }
 
     private void startListening() {
@@ -291,34 +300,38 @@ public class TarsosActivity extends FragmentActivity {
         analyzer.stop();
         videoView.stopPlayback();
         spinner.setVisibility(View.VISIBLE);
-        grader.getGrade(new Grader.GradeCallback() {
-            @Override
-            public void onGrade(final double grade) {
-                TarsosActivity.this.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        final Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-                        intent.putExtra("grade", grade);
-                        intent.putExtra("performanceFileName", analyzer.getRecordFileName());
-                        intent.putExtra("song", songName);
-                        intent.putExtra("performanceFile", analyzer.getRecordFile());
-                        Log.d("TAG","starting result activity");
-                        KaraokeRepository.getInstance().getUser(FirebaseAuth.getInstance().getUid()).observe(TarsosActivity.this, new Observer<User>() {
-                            @Override
-                            public void onChanged(@Nullable User user) {
-
-                                intent.putExtra("uid", user.getId());
-                                intent.putExtra("username", user.getUsername());
-                                startActivity(intent);
-                                spinner.setVisibility(View.GONE);
-                                finish();
-                            }
-                        });
-
-                    }
-                });
-            }
-        });
+        double grade = grader.getGrade();
+        Log.d("TAG","the grade is : " + grade);
+        final Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
+        intent.putExtra("grade", grade);
+        intent.putExtra("performanceFileName", analyzer.getRecordFileName());
+        intent.putExtra("song", songName);
+        intent.putExtra("performanceFile", analyzer.getRecordFile());
+        intent.putExtra("uid",FirebaseAuth.getInstance().getUid().toString());
+        startActivity(intent);
+        spinner.setVisibility(View.GONE);
+        finish();
+//        grader.getGrade(new Grader.GradeCallback() {
+//            @Override
+//            public void onGrade(final double grade) {
+//                TarsosActivity.this.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        final Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
+//                        intent.putExtra("grade", grade);
+//                        intent.putExtra("performanceFileName", analyzer.getRecordFileName());
+//                        intent.putExtra("song", songName);
+//                        intent.putExtra("performanceFile", analyzer.getRecordFile());
+//                        Log.d("TAG","starting result activity");
+//                        //change - pass through the uid and let the result activity get the user
+//                        intent.putExtra("uid",FirebaseAuth.getInstance().getUid().toString());
+//                        startActivity(intent);
+//                        spinner.setVisibility(View.GONE);
+//                        finish();
+//                    }
+//                });
+//            }
+//        });
         pitchText.setText("0.00");
         noteText.setText("--");
     }

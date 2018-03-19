@@ -302,11 +302,12 @@ public class Grader {
         performancePitches.add(pitch);
         Note given = getNoteFromHz(pitch.getPitch());
         Group currentGroup = groups.get(iterator);
+        Log.d("TAG","current pitch time : " + pitch.getEnd() + " group end time : " + currentGroup.getEndTime());
         if (pitch.getEnd() > currentGroup.getEndTime()) {
             //moving to the next group
             if (pitch.getStart() > groups.get(iterator + 1).getStartTime()) {
-                Log.d("TAG", "OPENING NEW GROUP ");
                 groups.get(iterator).calculateGrade();
+                Log.d("TAG","grade before + is : " + grade + "and group grade is : " + groups.get(iterator).getGroupGrade());
                 grade += groups.get(iterator).getGroupGrade();
                 iterator++;
                 currentGroup = groups.get(iterator);
@@ -388,9 +389,8 @@ public class Grader {
         if (performancePitches.size() == 0) {
             return 0;
         } else {
-            double performanceRate = 100 / (groups.get(iterator).getEndTime() / groups.get(groups.size() - 1).getEndTime());
+            double performanceRate = (groups.get(iterator).getEndTime() / groups.get(groups.size() - 1).getEndTime());
             grade *= performanceRate;
-            Log.d("TAG","grade from grader is : " + grade);
             return grade;
         }
     }

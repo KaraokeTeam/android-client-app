@@ -1,6 +1,7 @@
 package com.example.orpriesender.karaoke.model;
 
 import android.support.annotation.NonNull;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +34,7 @@ public class Group {
         mistakes = 0;
         success = 0;
         groupGrade = 0;
-        mistakesRate = 0.5;
+        mistakesRate = 0.1;
         successRate = 1-mistakesRate;
         wrongSamples = new ArrayList<>();
         rightSamples = new ArrayList<>();
@@ -107,15 +108,22 @@ public class Group {
         mistakes+=s;
     }
 
-    public void calculateGrade()
-    {
-        double goodGrade = 100*(success/samplesAmount);
-        double badGrade = 100 - (100*(mistakes/samplesAmount));
+    public void calculateGrade(float performanceDuration){
+        Log.d("TAG","success : " + success + " mistakes : " + mistakes);
+        double goodGrade = 100 *(success / (success + mistakes));
+        double badGrade = -100 * (mistakes / (success + mistakes));
         if(goodGrade>100){goodGrade = 100;}
-        if(badGrade<0) {badGrade = 0;}
+        if(badGrade<-100) {badGrade = -100;}
+        Log.d("TAG","good grade before= " + goodGrade + "bad grade = " + badGrade);
         goodGrade *= successRate;
         badGrade *= mistakesRate;
+        Log.d("TAG","good grade after= " + goodGrade + "bad grade = " + badGrade);
         groupGrade = goodGrade + badGrade;
+        if(groupGrade < 0){groupGrade=0;}
+        Log.d("TAG","performance duration is : " + performanceDuration);
+        Log.d("TAG","duration / performanceDuration =  " + (duration / performanceDuration));
+        groupGrade *= ((double)duration / (double)performanceDuration);
+        Log.d("TAG","group grade after is : " + groupGrade);
     }
 
     public List<Pitch> getWrongSamples() {

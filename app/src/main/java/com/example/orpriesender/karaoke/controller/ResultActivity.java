@@ -48,7 +48,7 @@ public class ResultActivity extends FragmentActivity {
     private boolean isPlay = true;
 
     //members received from last activity
-    Double result;
+    String result;
     String performanceFileName, userId, username, songName;
     int performanceLength;
     File performanceFile;
@@ -65,7 +65,7 @@ public class ResultActivity extends FragmentActivity {
         Intent intent = getIntent();
         performanceFile = (File) intent.getSerializableExtra("performanceFile");
         performanceFileName = intent.getStringExtra("performanceFileName");
-        result = intent.getDoubleExtra("grade", 0);
+        result = intent.getStringExtra("grade");
         userId = intent.getStringExtra("uid");
         songName = intent.getStringExtra("song");
 

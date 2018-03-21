@@ -48,6 +48,8 @@ public class Grader {
     private List<Onset> performanceOnsets;
     private int iterator;
     private double grade;
+    private double maxGrade;
+    private float performanceDuration;
 
     //the application context
     private Context context;
@@ -72,6 +74,7 @@ public class Grader {
     public Grader(Context context, String songName) {
         this.context = context;
         this.songName = songName;
+
         try {
             this.notes = getNotesMapFromJson();
 
@@ -104,7 +107,9 @@ public class Grader {
         this.mistakes = 0;
         this.keepGoing = true;
         this.grade = 0;
+        this.maxGrade = 0;
         this.iterator = 0;
+        performanceDuration = 0;
 
 //        if (!onsetsCompleted) {
 //            KaraokeRepository.getInstance().getSourceOnsetFile(songName, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
@@ -306,9 +311,11 @@ public class Grader {
         if (pitch.getEnd() > currentGroup.getEndTime()) {
             //moving to the next group
             if (pitch.getStart() > groups.get(iterator + 1).getStartTime()) {
-                groups.get(iterator).calculateGrade();
+                //groups.get(iterator).calculateGrade();
+                performanceDuration += groups.get(iterator).getDuration();
+                Log.d("TAG","win : " + groups.get(iterator).getSuccess() + " lose : " + groups.get(iterator).getMistakes()+ " fillrate : " + groups.get(iterator).getFillRate());
                 Log.d("TAG","grade before + is : " + grade + "and group grade is : " + groups.get(iterator).getGroupGrade());
-                grade += groups.get(iterator).getGroupGrade();
+                //grade += groups.get(iterator).getGroupGrade();
                 iterator++;
                 currentGroup = groups.get(iterator);
             }
@@ -319,7 +326,7 @@ public class Grader {
         if (given.equals(currentGroup.getNote())) {
             //if you song correctly
             groups.get(iterator).addToRightSamples(pitch);
-            groups.get(iterator).addSuccess(1);
+            groups.get(iterator).addSuccess(1.0);
         } else {
             //if you song incorrectly
 
@@ -329,8 +336,8 @@ public class Grader {
                 groups.get(iterator).addMistakes(0.5);
             } else {
                 //it's a bad mistake
-                groups.get(iterator).addToRightSamples(pitch);
-                groups.get(iterator).addSuccess(1);
+                groups.get(iterator).addToWrongSamples(pitch);
+                groups.get(iterator).addMistakes(1.0);
             }
         }
     }
@@ -372,7 +379,7 @@ public class Grader {
         }
     }
 
-    public double getGrade() {
+    public String getGrade() {
 //        new Thread(new Runnable() {
 //            @Override
 //            public void run() {
@@ -387,11 +394,19 @@ public class Grader {
 //            }
 //        }).start();
         if (performancePitches.size() == 0) {
-            return 0;
+            return null;
         } else {
+            for(int i=0; i<=iterator; i++){
+                groups.get(i).calculateGrade(performanceDuration);
+                grade += groups.get(i).getGroupGrade();
+            }
+//            double performanceRate = 1 /(groups.get(iterator).getEndTime() / groups.get(groups.size() - 1).getEndTime());
+//            grade *= performanceRate;
+//            return grade;
             double performanceRate = (groups.get(iterator).getEndTime() / groups.get(groups.size() - 1).getEndTime());
-            grade *= performanceRate;
-            return grade;
+            this.maxGrade = 100 * performanceRate;
+            Log.d("TAG","grade is : " + grade + "/" + maxGrade);
+            return (Math.round(this.grade)) + "/" + Math.round(this.maxGrade);
         }
     }
 }

@@ -1,5 +1,7 @@
 package com.example.orpriesender.karaoke.model;
 
+import android.util.Log;
+
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.Arrays;
@@ -55,11 +57,13 @@ public class Note {
         this.error = error;
     }
 
-    @Override
-    public boolean equals(Object obj) {
-        Note note = (Note) obj;
-        if (this.note.equalsIgnoreCase(note.getNote()))
+
+    public boolean equals(Note note) {
+        if (this.note.equalsIgnoreCase(note.getNote())){
+
             return true;
+        }
+
         return false;
     }
 

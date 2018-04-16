@@ -158,7 +158,7 @@ public class ResultActivity extends FragmentActivity {
                 input.setLayoutParams(lp);
                 dialogBuilder.setView(input);
 
-
+                
                 //configure the dialog buttons
                 dialogBuilder.setPositiveButton("Publish", new DialogInterface.OnClickListener() {
                     @Override

@@ -50,6 +50,7 @@ public class Grader {
     private double grade;
     private double maxGrade;
     private float performanceDuration;
+    private final double roomForError = 0.1;
 
     //the application context
     private Context context;
@@ -232,8 +233,7 @@ public class Grader {
                     try {
                         Pitch p = queue.poll(1, TimeUnit.SECONDS);
                         if (p != null) {
-                            //consumePitch(p);
-                            newAlgorithm(p);
+                            pitchHandler(p);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -306,15 +306,15 @@ public class Grader {
             return;
         performancePitches.add(pitch);
         Note given = getNoteFromHz(pitch.getPitch());
-        Group currentGroup = groups.get(iterator);
-        Log.d("TAG","current pitch time : " + pitch.getEnd() + " group end time : " + currentGroup.getEndTime());
+        Group currentGroup = groups.get(iterator);//add 0.1 seconds
+        Log.d("TAG", "current pitch time : " + pitch.getEnd() + " group end time : " + currentGroup.getEndTime());
         if (pitch.getEnd() > currentGroup.getEndTime()) {
             //moving to the next group
             if (pitch.getStart() > groups.get(iterator + 1).getStartTime()) {
-                //groups.get(iterator).calculateGrade();
+                groups.get(iterator).calculateGrade();
                 performanceDuration += groups.get(iterator).getDuration();
-                Log.d("TAG","win : " + groups.get(iterator).getSuccess() + " lose : " + groups.get(iterator).getMistakes()+ " fillrate : " + groups.get(iterator).getFillRate());
-                Log.d("TAG","grade before + is : " + grade + "and group grade is : " + groups.get(iterator).getGroupGrade());
+                Log.d("TAG", "win : " + groups.get(iterator).getSuccess() + " lose : " + groups.get(iterator).getMistakes() + " fillrate : " + groups.get(iterator).getFillRate());
+                Log.d("TAG", "grade before + is : " + grade + "and group grade is : " + groups.get(iterator).getGroupGrade());
                 //grade += groups.get(iterator).getGroupGrade();
                 iterator++;
                 currentGroup = groups.get(iterator);
@@ -322,22 +322,58 @@ public class Grader {
         }
         //the iterator and currentGroup pointing on the right group (time)
         //and now we start to compare the sample
-        Log.d("TAG","given note is : " + given.toString() + " current note is : " + currentGroup.getNote().toString());
+        Log.d("TAG", "given note is : " + given.toString() + " current note is : " + currentGroup.getNote().toString());
         if (given.equals(currentGroup.getNote())) {
             //if you song correctly
             groups.get(iterator).addToRightSamples(pitch);
-            groups.get(iterator).addSuccess(1.0);
+
         } else {
             //if you song incorrectly
+            groups.get(iterator).addToWrongSamples(pitch);
+        }
+    }
 
-            if (given.distance(currentGroup.getNote()) == 1 || given.distance(currentGroup.getNote()) == 11) {
-                //check if the sample is a "Neighbor" note
-                groups.get(iterator).addToWrongSamples(pitch);
-                groups.get(iterator).addMistakes(0.5);
-            } else {
-                //it's a bad mistake
-                groups.get(iterator).addToWrongSamples(pitch);
-                groups.get(iterator).addMistakes(1.0);
+    private void pitchHandler(Pitch pitch){
+        if(pitch.getPitch() == -1)
+            return;
+        Note given = getNoteFromHz(pitch.getPitch());
+        Group currentGroup = groups.get(iterator);
+        Group nextGroup = groups.get(iterator + 1);
+        if((pitch.getStart() >= currentGroup.getStartTime() - roomForError &&
+                pitch.getStart() <= currentGroup.getEndTime() - roomForError) ||
+
+                (pitch.getStart() >= currentGroup.getEndTime() - roomForError &&
+                pitch.getStart() <= currentGroup.getEndTime() + roomForError)){
+
+            if(given.equals(currentGroup.getNote())){
+                currentGroup.addToRightSamples(pitch);
+            } else{
+                currentGroup.addToWrongSamples(pitch);
+            }
+        }else if(pitch.getStart() <= currentGroup.getEndTime() + roomForError &&
+                pitch.getStart() >= nextGroup.getStartTime() - roomForError){ //inside two notes
+            //see if the pitch is current or next
+            if(given.equals(currentGroup.getNote())){
+                currentGroup.addToRightSamples(pitch);
+            }else if(given.equals(nextGroup.getNote())){
+                iterator++;
+                nextGroup.addToRightSamples(pitch);
+                currentGroup.calculateGrade();
+            } else{
+                currentGroup.addToWrongSamples(pitch);
+                performancePitches.add(pitch);
+            }
+        } else if(pitch.getStart() > currentGroup.getEndTime() + roomForError){//now it cant be current
+            iterator++;
+            currentGroup.calculateGrade();
+            if(pitch.getStart() >= nextGroup.getStartTime() - roomForError){
+                if(given.equals(nextGroup.getNote())){
+                    nextGroup.addToRightSamples(pitch);
+                    performancePitches.add(pitch);
+                } else{
+                    nextGroup.addToWrongSamples(pitch);
+                    performancePitches.add(pitch);
+                }
             }
         }
     }
@@ -396,8 +432,8 @@ public class Grader {
         if (performancePitches.size() == 0) {
             return null;
         } else {
-            for(int i=0; i<=iterator; i++){
-                groups.get(i).calculateGrade(performanceDuration);
+            for (int i = 0; i < iterator; i++) {
+                groups.get(i).calculateGrade();
                 grade += groups.get(i).getGroupGrade();
             }
 //            double performanceRate = 1 /(groups.get(iterator).getEndTime() / groups.get(groups.size() - 1).getEndTime());
@@ -405,8 +441,31 @@ public class Grader {
 //            return grade;
             double performanceRate = (groups.get(iterator).getEndTime() / groups.get(groups.size() - 1).getEndTime());
             this.maxGrade = 100 * performanceRate;
-            Log.d("TAG","grade is : " + grade + "/" + maxGrade);
+            Log.d("TAG", "grade is : " + grade + "/" + maxGrade);
             return (Math.round(this.grade)) + "/" + Math.round(this.maxGrade);
         }
     }
+
+    public String getGrade2() {
+        if (performancePitches.size() == 0) {
+            return "0";
+        }
+        Log.d("TAG","iterator : " + iterator);
+        double performanceLength = getPerformanceLength();
+        for(int i=0; i < iterator; i++){
+            double fillRate = groups.get(i).getDuration() / performanceLength;
+            double groupGrade = groups.get(i).getGroupGrade();
+            grade += fillRate * groupGrade;
+        }
+        Log.d("TAG","grade : " + grade);
+        return "" + grade;
+    }
+
+    public double getPerformanceLength(){
+        for(int i=0; i < iterator; i++){
+            performanceDuration += groups.get(i).getDuration();
+        }
+        return performanceDuration;
+    }
+
 }

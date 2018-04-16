@@ -20,10 +20,11 @@ public class Group {
     private float startTime;
     private float endTime;
     private int samplesAmount;
-    private float fillRate; //the rate of this group from the whole song
-    private float duration;
+    private double fillRate; //the rate of this group from the whole song
+    private double duration;
     private List<Pitch> wrongSamples;
     private List<Pitch> rightSamples;
+    private double totalSamples;
     private double mistakes;
     private double success;
     private double groupGrade;
@@ -31,6 +32,7 @@ public class Group {
     private double successRate;
 
     public Group(){
+        totalSamples = 0;
         mistakes = 0;
         success = 0;
         groupGrade = 0;
@@ -72,7 +74,7 @@ public class Group {
         this.samplesAmount = samplesAmount;
     }
 
-    public float getFillRate() {
+    public double getFillRate() {
         return fillRate;
     }
 
@@ -80,7 +82,7 @@ public class Group {
         this.fillRate = fillRate;
     }
 
-    public float getDuration() {
+    public double getDuration() {
         return duration;
     }
 
@@ -90,12 +92,16 @@ public class Group {
 
     public void addToWrongSamples (Pitch pitch)
     {
+
         wrongSamples.add(pitch);
+        totalSamples++;
     }
 
     public void addToRightSamples (Pitch pitch)
     {
         rightSamples.add(pitch);
+        success++;
+        totalSamples++;
     }
 
     public void addSuccess(double s)
@@ -108,22 +114,13 @@ public class Group {
         mistakes+=s;
     }
 
-    public void calculateGrade(float performanceDuration){
-        Log.d("TAG","success : " + success + " mistakes : " + mistakes);
-        double goodGrade = 100 *(success / (success + mistakes));
-        double badGrade = -100 * (mistakes / (success + mistakes));
-        if(goodGrade>100){goodGrade = 100;}
-        if(badGrade<-100) {badGrade = -100;}
-        Log.d("TAG","good grade before= " + goodGrade + "bad grade = " + badGrade);
-        goodGrade *= successRate;
-        badGrade *= mistakesRate;
-        Log.d("TAG","good grade after= " + goodGrade + "bad grade = " + badGrade);
-        groupGrade = goodGrade + badGrade;
-        if(groupGrade < 0){groupGrade=0;}
-        Log.d("TAG","performance duration is : " + performanceDuration);
-        Log.d("TAG","duration / performanceDuration =  " + (duration / performanceDuration));
-        groupGrade *= ((double)duration / (double)performanceDuration);
-        Log.d("TAG","group grade after is : " + groupGrade);
+    public void calculateGrade(){
+        if(totalSamples != 0){ //TODO : add check to minimum totalSamples according to source
+            groupGrade = 100 * (success / totalSamples);
+            Log.d("TAG","success/total = " + success + "/" + totalSamples);
+            Log.d("TAG","Group Grade : " + groupGrade);
+        } else groupGrade = 0;
+
     }
 
     public List<Pitch> getWrongSamples() {

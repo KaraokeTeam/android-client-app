@@ -3,4 +3,10 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="post_block">#C4D0D9</color>
+    <color name="moshe_black">#3F3F3F</color>
+    <color name="moshe_black_pressed">#565656</color>
+    <color name="app_background">#C3CFD8</color>
+    <color name="text_color">#F2F2F2</color>
+
 </resources>

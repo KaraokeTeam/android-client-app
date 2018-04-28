@@ -4,18 +4,21 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/blue">
+    android:background="@color/app_background">
 
 
     <Spinner
         android:id="@+id/tarsos_activity_dropdown"
-        android:popupBackground="@color/fui_buttonShadow"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:animateLayoutChanges="false"
+        android:background="@color/moshe_black"
+        android:contextClickable="false"
+        android:popupBackground="@color/moshe_black"
         app:layout_constraintBottom_toTopOf="@+id/tarsos_activity_note_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -82,10 +85,12 @@
 
     <ImageButton
         android:id="@+id/tarsos_activity_back_button"
-        style="?android:attr/borderlessButtonStyle"
+        style="@style/Widget.AppCompat.ImageButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/back_button"
+        android:background="@color/fui_transparent"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:src="@drawable/arrow_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -112,7 +117,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:src="@drawable/mic_circle"
+        android:background="@color/fui_transparent"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:src="@drawable/record_btn_red_big"
         android:visibility="visible"
         app:layout_constraintBottom_toTopOf="@+id/tarsos_activity_note_text"
         app:layout_constraintEnd_toEndOf="parent"
@@ -120,13 +127,16 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.502" />
 
-    <Button
+    <ImageButton
         android:id="@+id/tarsos_activity_stop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
+        android:background="@color/fui_transparent"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:src="@drawable/stop_btn"
         android:text="stop"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/tarsos_activity_start_button"
@@ -144,8 +154,6 @@
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
-
-
 
 
 </android.support.constraint.ConstraintLayout>

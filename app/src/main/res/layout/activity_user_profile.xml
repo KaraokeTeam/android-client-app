@@ -19,14 +19,16 @@
         <android.support.constraint.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0">
+            android:layout_weight="0"
+            android:background="@color/post_block">
 
             <ImageButton
                 android:id="@+id/tarsos_activity_back_button"
-                style="?android:attr/borderlessButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/back_button"
+                android:background="@color/fui_transparent"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:src="@drawable/arrow_btn"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 

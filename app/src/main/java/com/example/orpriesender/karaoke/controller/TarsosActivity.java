@@ -50,7 +50,7 @@ public class TarsosActivity extends FragmentActivity {
     }
 
     TextView pitchText, noteText, countdownText,messageText;
-    Button stopListeningButton;
+    ImageButton stopListeningButton;
     ImageButton startListeningButton, backButton;
     VideoView videoView;
     Spinner dropdown;

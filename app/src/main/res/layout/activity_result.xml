@@ -4,45 +4,42 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/blue">
+    android:background="@drawable/profile_back_blue">
 
-    <Button
+    <ImageButton
         android:id="@+id/activity_result_feed_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
+        android:background="@color/fui_transparent"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:src="@drawable/arrow_btn"
         android:text="Feed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <ImageButton
         android:id="@+id/activity_result_restart_button"
-        style="@android:style/Widget.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="21dp"
-        android:background="@android:drawable/btn_default"
-        android:text="Record another"
+        android:layout_margin="0dp"
+        android:background="@color/fui_transparent"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:src="@drawable/record_again_btn"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/activity_result_publish_button"
-        app:layout_constraintHorizontal_bias="0.576"
         app:layout_constraintStart_toStartOf="@+id/activity_result_publish_button"
         app:layout_constraintTop_toBottomOf="@+id/activity_result_publish_button" />
 
-    <Button
+    <ImageButton
         android:id="@+id/activity_result_publish_button"
-        style="@android:style/Widget.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="21dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:background="@android:drawable/btn_default"
-        android:text="Publish"
+        android:layout_margin="5dp"
+        android:background="@color/fui_transparent"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:src="@drawable/publish_btn"
         app:layout_constraintBottom_toTopOf="@+id/activity_result_restart_button"
         app:layout_constraintEnd_toEndOf="@+id/activity_result_play"
         app:layout_constraintStart_toStartOf="@+id/activity_result_play"
@@ -90,14 +87,15 @@
 
     <ImageButton
         android:id="@+id/activity_result_play"
-        android:layout_width="97dp"
-        android:layout_height="62dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="69dp"
         android:background="@color/fui_transparent"
-        android:src="@drawable/play"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:src="@drawable/play_btn_purple_big"
         app:layout_constraintBottom_toTopOf="@+id/activity_result_publish_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

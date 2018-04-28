@@ -43,7 +43,7 @@ public class ResultActivity extends FragmentActivity {
     TextView result_number;
     MediaPlayer player;
     ImageButton play;
-    Button backToRecord, publish,backToFeed;
+    ImageButton backToRecord, publish,backToFeed;
     ProgressBar spinner;
     private boolean isPlay = true;
 
@@ -107,7 +107,7 @@ public class ResultActivity extends FragmentActivity {
             player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
-                    play.setImageResource(R.drawable.play);
+                    play.setImageResource(R.drawable.play_btn_purple_big);
                     play.setBackgroundColor(getResources().getColor(R.color.fui_transparent));
                     isPlay = true;
                 }
@@ -125,7 +125,7 @@ public class ResultActivity extends FragmentActivity {
                     isPlay = false;
                     player.start();
                 } else {
-                    play.setImageResource(R.drawable.play);
+                    play.setImageResource(R.drawable.play_btn_purple_big);
                     isPlay = true;
                     player.pause();
                 }
@@ -158,7 +158,7 @@ public class ResultActivity extends FragmentActivity {
                 input.setLayoutParams(lp);
                 dialogBuilder.setView(input);
 
-                
+
                 //configure the dialog buttons
                 dialogBuilder.setPositiveButton("Publish", new DialogInterface.OnClickListener() {
                     @Override

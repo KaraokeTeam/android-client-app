@@ -113,7 +113,7 @@ public class FeedAdapter extends BaseAdapter {
                             @Override
                             public void onDownloadFinished(File file) {
                                 posts.get(position).setPerformanceFile(file);
-                                playPause.setImageResource(R.drawable.pause);
+                                playPause.setImageResource(R.drawable.pause_btn);
                                 playPause.setVisibility(View.VISIBLE);
                                 spinner.setVisibility(View.GONE);
                                 PostListMediaPlayer.getInstance().setData(file);
@@ -130,7 +130,7 @@ public class FeedAdapter extends BaseAdapter {
                                 PostListMediaPlayer.getInstance().setOnCompletionListener(new PostListMediaPlayer.onCompletionListener() {
                                     @Override
                                     public void onPlayingComplete() {
-                                        playPause.setImageResource(R.drawable.play);
+                                        playPause.setImageResource(R.drawable.play_btn);
                                         seekBar.setProgress(0);
                                         posts.get(position).setAudioPosition(0);
                                         PostListMediaPlayer.getInstance().reset();
@@ -145,7 +145,7 @@ public class FeedAdapter extends BaseAdapter {
                     } else {//performance already downloaded
                         if (isPlaying) { //on press pause
                             seekBar.setEnabled(true);
-                            playPause.setImageResource(R.drawable.play);
+                            playPause.setImageResource(R.drawable.play_btn);
 
                             PostListMediaPlayer.getInstance().pause();
 
@@ -166,7 +166,7 @@ public class FeedAdapter extends BaseAdapter {
                             PostListMediaPlayer.getInstance().setOnCompletionListener(new PostListMediaPlayer.onCompletionListener() {
                                 @Override
                                 public void onPlayingComplete() {
-                                    playPause.setImageResource(R.drawable.play);
+                                    playPause.setImageResource(R.drawable.play_btn);
                                     seekBar.setProgress(0);
                                     posts.get(position).setAudioPosition(0);
                                     PostListMediaPlayer.getInstance().reset();
@@ -174,7 +174,7 @@ public class FeedAdapter extends BaseAdapter {
                                     seekBar.setEnabled(true);
                                 }
                             });
-                            playPause.setImageResource(R.drawable.pause);
+                            playPause.setImageResource(R.drawable.pause_btn);
                             isPlaying = true;
                             seekBar.setEnabled(false);
                             seekBar.setProgress(posts.get(position).getAudioPosition());

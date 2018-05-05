@@ -72,7 +72,7 @@ public class Note {
         return Math.abs(noteArr.indexOf(this.getNote()) - noteArr.indexOf(note.getNote()));
     }
 
-    public boolean is_correct_note(Note note)
+    public boolean isCorrectNote(Note note)
     {
         int d = this.distance(note);
         Log.d("Tag"," "+ d);

@@ -74,7 +74,9 @@ public class Note {
 
     public boolean is_correct_note(Note note)
     {
-        if (distance(note)==1 || distance(note)==11) {
+        int d = this.distance(note);
+        Log.d("Tag"," "+ d);
+        if (d==0 || d==1 || d==11) {
             return true;
         }
         else{

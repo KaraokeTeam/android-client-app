@@ -356,7 +356,7 @@ public class Grader {
             if(given.is_correct_note(currentGroup.getNote())){
                 currentGroup.addToRightSamples(pitch);
             }else if(given.is_correct_note(nextGroup.getNote())){
-                iterator++;
+                //iterator++;
                 nextGroup.addToRightSamples(pitch);
                 currentGroup.calculateGrade();
             } else{
@@ -365,6 +365,7 @@ public class Grader {
             }
         } else if(pitch.getStart() > currentGroup.getEndTime() + roomForError){//now it cant be current
             currentGroup.calculateGrade();
+            iterator++;
             if(pitch.getStart() >= nextGroup.getStartTime() - roomForError){
                 if(given.is_correct_note(nextGroup.getNote())){
                     nextGroup.addToRightSamples(pitch);

@@ -50,7 +50,7 @@ public class Grader {
     private double grade;
     private double maxGrade;
     private float performanceDuration;
-    private final double roomForError = 0.1;
+    private final double roomForError = 0.2;
 
     //the application context
     private Context context;
@@ -364,7 +364,6 @@ public class Grader {
                 performancePitches.add(pitch);
             }
         } else if(pitch.getStart() > currentGroup.getEndTime() + roomForError){//now it cant be current
-            iterator++;
             currentGroup.calculateGrade();
             if(pitch.getStart() >= nextGroup.getStartTime() - roomForError){
                 if(given.equals(nextGroup.getNote())){

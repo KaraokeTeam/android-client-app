@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Karaoke.iml" filepath="$PROJECT_DIR$/Karaoke.iml" />
+      <module fileurl="file://C:\Users\Roy\StudioProjects\android-client-app\Karaoke.iml" filepath="C:\Users\Roy\StudioProjects\android-client-app\Karaoke.iml" />
+      <module fileurl="file://$PROJECT_DIR$/android-client-app.iml" filepath="$PROJECT_DIR$/android-client-app.iml" />
       <module fileurl="file://C:\dev\AndroidProjects\Karaoke\android-client-app.iml" filepath="C:\dev\AndroidProjects\Karaoke\android-client-app.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>

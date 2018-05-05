@@ -283,7 +283,7 @@ public class Grader {
             Note given = getNoteFromHz(pitch.getPitch());
             Note source = getNoteFromHz(sourcePitch.getPitch());
 
-            if (given.equals(source) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 0.1)) {
+            if (given.equals(source) && (Math.abs(pitch.getStart() - sourcePitch.getStart()) < 0.2)) {
                 currentOffset = i;
                 correct = true;
                 break;
@@ -345,7 +345,7 @@ public class Grader {
                 (pitch.getStart() >= currentGroup.getEndTime() - roomForError &&
                 pitch.getStart() <= currentGroup.getEndTime() + roomForError)){
 
-            if(given.equals(currentGroup.getNote())){
+            if(given.is_correct_note(currentGroup.getNote())){
                 currentGroup.addToRightSamples(pitch);
             } else{
                 currentGroup.addToWrongSamples(pitch);
@@ -353,9 +353,9 @@ public class Grader {
         }else if(pitch.getStart() <= currentGroup.getEndTime() + roomForError &&
                 pitch.getStart() >= nextGroup.getStartTime() - roomForError){ //inside two notes
             //see if the pitch is current or next
-            if(given.equals(currentGroup.getNote())){
+            if(given.is_correct_note(currentGroup.getNote())){
                 currentGroup.addToRightSamples(pitch);
-            }else if(given.equals(nextGroup.getNote())){
+            }else if(given.is_correct_note(nextGroup.getNote())){
                 iterator++;
                 nextGroup.addToRightSamples(pitch);
                 currentGroup.calculateGrade();
@@ -366,7 +366,7 @@ public class Grader {
         } else if(pitch.getStart() > currentGroup.getEndTime() + roomForError){//now it cant be current
             currentGroup.calculateGrade();
             if(pitch.getStart() >= nextGroup.getStartTime() - roomForError){
-                if(given.equals(nextGroup.getNote())){
+                if(given.is_correct_note(nextGroup.getNote())){
                     nextGroup.addToRightSamples(pitch);
                     performancePitches.add(pitch);
                 } else{

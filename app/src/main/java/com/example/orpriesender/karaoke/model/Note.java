@@ -72,4 +72,13 @@ public class Note {
         return Math.abs(noteArr.indexOf(this.getNote()) - noteArr.indexOf(note.getNote()));
     }
 
+    public boolean is_correct_note(Note note)
+    {
+        if (distance(note)==1 || distance(note)==11) {
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
 }

@@ -15,6 +15,7 @@
         <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_margin="5dp"
             android:src="@drawable/profile_pic_small" />
 
         <TextView
@@ -88,8 +89,7 @@
             android:layout_height="match_parent"
             android:layout_margin="8dp"
             android:layout_weight="1"
-            android:progressBackgroundTint="@color/moshe_black"
-            android:progressDrawable="@android:color/darker_gray"
+            android:progressDrawable="@drawable/seek_progress"
             android:thumb="@drawable/circle_bar" />
 
     </LinearLayout>

@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/blue">
+    android:background="@color/moshe_black">
 
 
     <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -12,7 +12,7 @@
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/blue"
+        android:background="@color/app_background"
         android:orientation="vertical">
 
 
@@ -102,9 +102,6 @@
             tools:layout="@layout/fragment_posts_list" />
 
     </LinearLayout>
-
-
-
 
 
 </android.support.constraint.ConstraintLayout>

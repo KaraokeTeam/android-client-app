@@ -108,7 +108,6 @@ public class ResultActivity extends FragmentActivity {
                 @Override
                 public void onCompletion(MediaPlayer mp) {
                     play.setImageResource(R.drawable.play_btn_purple_big);
-                    play.setBackgroundColor(getResources().getColor(R.color.fui_transparent));
                     isPlay = true;
                 }
             });
@@ -121,7 +120,7 @@ public class ResultActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 if (isPlay) {
-                    play.setImageResource(R.drawable.pause);
+                    play.setImageResource(R.drawable.pause_btn_purple_big);
                     isPlay = false;
                     player.start();
                 } else {

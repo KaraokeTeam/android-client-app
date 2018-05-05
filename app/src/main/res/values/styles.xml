@@ -1,9 +1,37 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="android:Theme.Holo.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="KaraokeTheme" parent="FirebaseUI">
+        <item name="android:background">@color/moshe_black</item>
+        <item name="android:popupBackground">@color/post_block</item>
+        <item name="android:dialogIcon">@drawable/logosmall</item>
+        <item name="android:dialogTheme">@style/KaraokeTheme</item>
+        <item name="android:colorPrimary">@color/app_background</item>
+        <item name="android:colorPrimaryDark">@color/sagol</item>
+        <item name="android:colorAccent">@color/sagol</item>
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textColorHint">@color/text_color</item>
+        <item name="android:textColorHighlight">@color/sagol</item>
+        <item name="colorControlNormal">@color/sagol</item>
+        <item name="colorControlActivated">@color/text_color</item>
+        <!--<item name="android:colorControlHighlight">@color/sagol</item>-->
+        <item name="android:editTextColor">@color/text_color</item>
     </style>
+
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <item name="android:colorPrimary">@color/sagol</item>
+        <item name="android:colorPrimaryDark">@color/moshe_black</item>
+        <item name="android:colorAccent">@color/bordo</item>
+        <item name="colorAccent">@color/sagol</item>
+        <item name="android:textColor">@color/moshe_black</item>
+        <item name="android:textColorPrimary">@color/moshe_black</item>
+        <item name="android:textColorSecondary">@color/moshe_black</item>
+        <item name="android:textColorSecondaryInverse">@color/moshe_black</item>
+        <item name="android:textColorPrimaryInverse">@color/moshe_black</item>
+        <item name="android:colorForeground">@color/moshe_black</item>
+        <item name="android:navigationBarColor">@color/moshe_black_pressed</item>
+    </style>
+
 
 
 

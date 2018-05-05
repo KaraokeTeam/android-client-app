@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.widget.Toast;
 
+import com.example.orpriesender.karaoke.R;
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.ErrorCodes;
 import com.firebase.ui.auth.IdpResponse;
@@ -35,6 +36,8 @@ public class AuthActivity extends Activity {
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
                         .setAvailableProviders(providers)
+                        .setTheme(R.style.KaraokeTheme)
+                        .setLogo(R.drawable.logosmall)
                         .build(),
                 RC_SIGN_IN);
 

@@ -8,5 +8,7 @@
     <color name="moshe_black_pressed">#565656</color>
     <color name="app_background">#C3CFD8</color>
     <color name="text_color">#F2F2F2</color>
+    <color name="bordo">#7F0909</color>
+    <color name="sagol">#563C8E</color>
 
 </resources>

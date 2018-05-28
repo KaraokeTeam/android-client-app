@@ -2,6 +2,7 @@ package com.example.orpriesender.karaoke.controller;
 
 //import android.app.Fragment;
 
+import android.arch.lifecycle.LiveData;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -36,6 +37,7 @@ public class PostListFragment extends Fragment {
     private TextView noItemsText;
     private onUsernameClicked onUsernameClickedListener;
     private onPlayClicked onPlayClickedListener;
+    private onProfilePicNeeded onProfilePicNeeded;
     private PostListViewModel vm;
 
     public PostListFragment() {
@@ -61,12 +63,14 @@ public class PostListFragment extends Fragment {
         try {
             onUsernameClickedListener = (onUsernameClicked) getActivity();
             onPlayClickedListener = (onPlayClicked) getActivity();
+            onProfilePicNeeded = (onProfilePicNeeded) getActivity();
         } catch (ClassCastException c) {
             onUsernameClickedListener = null;
         }
         //if it is null it will not be used
         adapter.setOnUsernameClickListener(onUsernameClickedListener);
         adapter.setOnPlayClickedListener(onPlayClickedListener);
+        adapter.setOnProfilePicNeededListener(onProfilePicNeeded);
 
         //activate spinner
         spinner.setVisibility(View.VISIBLE);
@@ -103,6 +107,10 @@ public class PostListFragment extends Fragment {
 
     public interface onDownloadFinished{
         void onDownloadFinished(File file);
+    }
+
+    public interface onProfilePicNeeded{
+        LiveData<File> onProfilePicNeeded(String userId, onDownloadFinished callback);
     }
 
 }

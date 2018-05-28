@@ -21,13 +21,23 @@ public class User {
     @NonNull
     private String id;
     private String username;
-    private Uri imageUrl;
+    private String imageUrl;
     private int rating;
 
     public User(FirebaseUser user) {
         this.id = user.getUid();
         this.username = user.getDisplayName();
-        this.imageUrl = user.getPhotoUrl();
+        Uri photoUri = user.getPhotoUrl();
+        if(photoUri != null)
+            this.imageUrl = user.getPhotoUrl().toString();
+        else this.imageUrl = "";
+        this.rating = 0;
+    }
+
+    public User(FirebaseUser user, String imageUrl){
+        this.id = user.getUid();
+        this.username = user.getDisplayName();
+        this.imageUrl = imageUrl;
         this.rating = 0;
     }
 
@@ -65,11 +75,11 @@ public class User {
         this.username = username;
     }
 
-    public Uri getImageUrl() {
+    public String getImageUrl() {
         return imageUrl;
     }
 
-    public void setImageUrl(Uri imageUrl) {
+    public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
     }
 

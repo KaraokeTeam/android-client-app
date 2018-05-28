@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">BeatRoyale</string>
+    <string name="app_unavailable">Permissions are required for this app to work.\n
+        Please go to\n
+        settings -> apps -> permissions\n
+        and grant all permissions.</string>
 </resources>

@@ -2,22 +2,32 @@ package com.example.orpriesender.karaoke.controller;
 
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
-import com.example.orpriesender.karaoke.model.KaraokeRepository;
-import com.example.orpriesender.karaoke.model.Post;
-import com.example.orpriesender.karaoke.view_model.PostListViewModel;
 import com.example.orpriesender.karaoke.R;
+import com.example.orpriesender.karaoke.model.FirebaseStorageManager;
+import com.example.orpriesender.karaoke.model.KaraokeRepository;
+import com.example.orpriesender.karaoke.model.ModelFireBase;
+import com.example.orpriesender.karaoke.model.Post;
 import com.example.orpriesender.karaoke.model.User;
+import com.example.orpriesender.karaoke.util.Util;
+import com.example.orpriesender.karaoke.view_model.PostListViewModel;
 import com.example.orpriesender.karaoke.view_model.UserProfileViewModel;
 import com.example.orpriesender.karaoke.view_model.UserProfileViewModelFactory;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.util.List;
@@ -27,14 +37,19 @@ import java.util.List;
  * Created by Or Priesender on 03-Feb-18.
  */
 
-public class UserProfileActivity extends FragmentActivity implements PostListFragment.onPlayClicked,PostListFragment.onUsernameClicked{
+public class UserProfileActivity extends FragmentActivity implements PostListFragment.onPlayClicked, PostListFragment.onUsernameClicked {
     TextView username;
     TextView rating;
     ImageView profilePic;
     ImageButton backButton;
     ProgressBar spinner;
+    Bitmap imageBitmap;
+    Boolean isCurrentUser = false;
     private PostListViewModel postListVM;
     private UserProfileViewModel userProfileVM;
+
+    static final int REQUEST_IMAGE_CAPTURE=1;
+    final static int RESULT_SUCCESS = 0;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,7 +73,7 @@ public class UserProfileActivity extends FragmentActivity implements PostListFra
 
             @Override
             public void onChanged(@Nullable List<Post> posts) {
-                if(posts.size() > 0){
+                if (posts.size() > 0) {
                     fragment.setPostsForUser(posts, userId);
                 }
             }
@@ -72,7 +87,9 @@ public class UserProfileActivity extends FragmentActivity implements PostListFra
             public void onChanged(@Nullable User user) {
                 username.setText(user.getUsername());
                 rating.setText("" + user.getRating());
+                applyProfilePicture(user);
                 spinner.setVisibility(View.GONE);
+                isCurrentUser = (user.getId().equals(FirebaseAuth.getInstance().getUid()));
             }
         });
 
@@ -84,7 +101,73 @@ public class UserProfileActivity extends FragmentActivity implements PostListFra
             }
         });
 
+        profilePic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isCurrentUser){
+                    dispatchTakePictureIntent();
+                }
+            }
+        });
+    }
 
+    private void applyProfilePicture(User user){
+        spinner.setVisibility(View.VISIBLE);
+        KaraokeRepository.getInstance().getUserImageFromUri(user.getImageUrl(),user.getId()).observe(this, new Observer<Bitmap>() {
+            @Override
+            public void onChanged(@Nullable Bitmap bitmap) {
+                if(bitmap != null){
+                    profilePic.setImageBitmap(bitmap);
+
+                }else{
+                    profilePic.setImageResource(R.drawable.default_profile_pic);
+                }
+                spinner.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void dispatchTakePictureIntent() {
+        Intent takePictureIntent =
+                new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if(takePictureIntent.resolveActivity(getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent,REQUEST_IMAGE_CAPTURE);
+        }
+    }
+
+    @Override
+    protected void
+    onActivityResult(int requestCode,int resultCode, Intent data) {
+        if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            Bundle extras = data.getExtras();
+            imageBitmap = (Bitmap) extras.get("data");
+            profilePic.setImageBitmap(imageBitmap);
+            File imageFile = Util.saveImageToFile(imageBitmap,FirebaseAuth.getInstance().getUid() + ".jpeg",this);
+            spinner.setVisibility(View.VISIBLE);
+            FirebaseStorageManager.getInstance().uploadImageForUser(FirebaseAuth.getInstance().getUid(),imageFile, new FirebaseStorageManager.FireBaseStorageUploadCallback() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot task) {
+                    Util.presentToast(getApplicationContext(),getActivity(),"Upload succeeded", Toast.LENGTH_SHORT);
+                    String userId = FirebaseAuth.getInstance().getUid();
+                    spinner.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Util.presentToast(getApplicationContext(),getActivity(),"Upload failed", Toast.LENGTH_SHORT);
+                    spinner.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onProgress(int progress) {
+                    //ignore
+                }
+            });
+        }
+    }
+
+    private FragmentActivity getActivity(){
+        return this;
     }
 
     @Override

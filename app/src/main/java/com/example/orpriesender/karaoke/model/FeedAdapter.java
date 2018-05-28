@@ -2,12 +2,15 @@ package com.example.orpriesender.karaoke.model;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -30,13 +33,16 @@ public class FeedAdapter extends BaseAdapter {
     PostListFragment.onUsernameClicked onUsernameClickedListener;
     PostListFragment.onPlayClicked onPlayClickedListener;
     PostListFragment.onDownloadFinished onDownloadFinishedListener;
-
+    PostListFragment.onProfilePicNeeded onProfilePicNeeded;
+    private Activity parentActivity;
     private boolean isPlaying;
 
     public FeedAdapter(Activity activity, List<Post> posts) {
         this.posts = posts;
         this.inflater = (LayoutInflater) activity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         this.isPlaying = false;
+        this.parentActivity = activity;
+
     }
 
     @Override
@@ -71,9 +77,12 @@ public class FeedAdapter extends BaseAdapter {
         TextView username = convertView.findViewById(R.id.username);
         TextView description = convertView.findViewById(R.id.description);
         TextView time =  convertView.findViewById(R.id.time);
+        final ImageView profilePic = convertView.findViewById(R.id.feed_item_profile_pic);
         final SeekBar seekBar = convertView.findViewById(R.id.seek_bar);
         final ImageButton playPause =  convertView.findViewById(R.id.play_pause_button);
         final ProgressBar spinner =  convertView.findViewById(R.id.feed_item_spinner);
+        final ProgressBar picSpinner = convertView.findViewById(R.id.feed_item_pic_spinner);
+        picSpinner.setVisibility(View.GONE);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -185,6 +194,33 @@ public class FeedAdapter extends BaseAdapter {
                 }
             });
         }
+        picSpinner.setVisibility(View.VISIBLE);
+        profilePic.setVisibility(View.GONE);
+        Bitmap profilePicBitmap = posts.get(position).getProfilePic();
+        if(profilePicBitmap == null && onProfilePicNeeded != null){
+            onProfilePicNeeded.onProfilePicNeeded(posts.get(position).getUserId(), new PostListFragment.onDownloadFinished() {
+
+                @Override
+                public void onDownloadFinished(File file) {
+                    profilePic.setVisibility(View.VISIBLE);
+                    picSpinner.setVisibility(View.GONE);
+                    if(file != null){
+                        Bitmap pic = BitmapFactory.decodeFile(file.getAbsolutePath());
+                        profilePic.setImageBitmap(pic);
+                        posts.get(position).setProfilePic(pic);
+                    } else {
+                        profilePic.setImageResource(R.drawable.default_profile_pic);
+                        posts.get(position).setProfilePic(BitmapFactory.decodeResource(parentActivity.getResources(),R.drawable.default_profile_pic));
+                    }
+                }
+            });
+        } else {
+            profilePic.setImageBitmap(profilePicBitmap);
+            profilePic.setVisibility(View.VISIBLE);
+            picSpinner.setVisibility(View.GONE);
+        }
+
+
 
 
         convertView.setTag(position);
@@ -208,4 +244,7 @@ public class FeedAdapter extends BaseAdapter {
         this.onPlayClickedListener = listener;
     }
 
+    public void setOnProfilePicNeededListener(PostListFragment.onProfilePicNeeded onProfilePicNeededListener) {
+        this.onProfilePicNeeded = onProfilePicNeededListener;
+    }
 }

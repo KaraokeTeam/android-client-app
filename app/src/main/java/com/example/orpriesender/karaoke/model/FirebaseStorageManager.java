@@ -81,13 +81,15 @@ public class FirebaseStorageManager {
         });
     }
 
-    void uploadImageForUser(String userId, File file, final FireBaseStorageUploadCallback callback) {
-        StorageReference instance = FirebaseStorage.getInstance().getReference("images");
-        final UploadTask task = instance.child(userId).putFile(Uri.fromFile(file));
+    public void uploadImageForUser(final String userId, File file, final FireBaseStorageUploadCallback callback) {
+        StorageReference instance = FirebaseStorage.getInstance().getReference().child("images");
+        final UploadTask task = instance.child(userId + ".jpeg").putFile(Uri.fromFile(file));
         task.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 callback.onSuccess(taskSnapshot);
+                //add the download url to the user in the db
+                ModelFireBase.getInstance().updateUserImage(userId,taskSnapshot.getDownloadUrl());
             }
         }).addOnFailureListener(new OnFailureListener() {
             @Override
@@ -97,11 +99,10 @@ public class FirebaseStorageManager {
         });
     }
 
-    //TODO : cache here also
     void downloadImageForUser(String userId, final FireBaseStorageDownloadCallback callback) {
-        StorageReference ref = FirebaseStorage.getInstance().getReference().child("images/" + userId + ".jpg");
+        StorageReference ref = FirebaseStorage.getInstance().getReference().child("images/" + userId + ".jpeg");
         try {
-            final File localFile = File.createTempFile(userId, "jpg");
+            final File localFile = File.createTempFile(userId, ".jpeg");
             localFile.deleteOnExit();
             ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
 

@@ -1,5 +1,8 @@
 package com.example.orpriesender.karaoke.model;
 
+import android.net.Uri;
+import android.util.Log;
+
 import com.example.orpriesender.karaoke.R;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -26,10 +29,31 @@ public class ModelFireBase {
 
     }
 
-    public void addUser(User user) {
+    public void addUser(final User user) {
         FirebaseDatabase db = FirebaseDatabase.getInstance();
-        DatabaseReference ref = db.getReference("users").child(user.getId());
-        ref.setValue(user);
+        final DatabaseReference ref = db.getReference("users").child(user.getId());
+        ref.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if(dataSnapshot.hasChild("id")){
+                    //user exists - do nothing
+                } else {
+                    ref.setValue(user);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                Log.d("TAG","error : " + databaseError.getMessage());
+            }
+        });
+    }
+
+    public void updateUserImage(String userId, Uri imageUri){
+        Log.d("TAG","UPDATING USER IMAGE");
+        FirebaseDatabase db = FirebaseDatabase.getInstance();
+        DatabaseReference ref = db.getReference("users").child(userId).child("imageUrl");
+        ref.setValue(imageUri.toString());
     }
 
     public void getUser(String id, final FirebaseCallback<User> callBack) {

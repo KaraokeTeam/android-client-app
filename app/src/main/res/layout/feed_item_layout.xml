@@ -12,11 +12,27 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:src="@drawable/profile_pic_small" />
+        <FrameLayout
+            android:layout_width="65dp"
+            android:layout_height="65dp">
+
+            <ProgressBar
+                android:id="@+id/feed_item_pic_spinner"
+                style="?android:attr/progressBarStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp" />
+
+            <ImageView
+                android:id="@+id/feed_item_profile_pic"
+                android:layout_width="65dp"
+                android:layout_height="65dp"
+                android:layout_margin="5dp"
+                android:src="@drawable/profile_pic_small" />
+
+
+        </FrameLayout>
+
 
         <TextView
             android:id="@+id/username"

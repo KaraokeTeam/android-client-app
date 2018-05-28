@@ -374,7 +374,7 @@ public class Grader {
                 nextGroup.addToWrongSamples(pitch);
             }
         } else {
-            System.out.println("note is in grey zone");
+            System.out.println("note is in grey zone , pitch time :"  + pitch.getStart() + " group start : " + currentGroup.getStartTime() + " group end " + currentGroup.getEndTime());
         }
         if (!noteWithinRange(pitch, currentGroup, 0) && noteWithinRange(pitch, nextGroup, roomForError)) {
             if (iterator < groups.size() - 2)

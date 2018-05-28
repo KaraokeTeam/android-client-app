@@ -5,6 +5,9 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.persistence.room.Room;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.util.Log;
 import android.view.Display;
 
@@ -60,6 +63,8 @@ public class KaraokeRepository {
     public void addUser(User user) {
         ModelFireBase.getInstance().addUser(user);
     }
+
+    public void updateUserImage(String userId, Uri imageUri){ModelFireBase.getInstance().updateUserImage(userId,imageUri);}
 
     /*
            end user region
@@ -290,6 +295,58 @@ public class KaraokeRepository {
     public void uploadPerformance(String postId, File file, FirebaseStorageManager.FireBaseStorageUploadCallback callback) {
         FirebaseStorageManager.getInstance().uploadAudioForPost(postId, file, callback);
     }
+
+    public LiveData<File> getUserImage(String userId){
+        final MutableLiveData<File> data = new MutableLiveData<>();
+
+        File cachedFile = LocalCacheManager.getInstance().getIfExists(userId + ".jpeg");
+        if (cachedFile != null) {
+            Log.d("TAG", "USING CACHED FILE FOR PROFILE PIC");
+            data.setValue(cachedFile);
+            return data;
+        }
+
+        FirebaseStorageManager.getInstance().downloadImageForUser(userId, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+                data.setValue(localFile);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                data.setValue(null);
+            }
+        });
+
+        return data;
+    }
+
+    public LiveData<Bitmap> getUserImageFromUri(String uri, String userId){
+        final MutableLiveData<Bitmap> data = new MutableLiveData<>();
+
+        File cachedFile = LocalCacheManager.getInstance().getIfExists(userId + ".jpeg");
+        if (cachedFile != null) {
+            Log.d("TAG", "USING CACHED FILE FOR PROFILE PIC");
+            data.setValue(BitmapFactory.decodeFile(cachedFile.getAbsolutePath()));
+            return data;
+        }
+
+        FirebaseStorageManager.getInstance().downloadImageForUser(userId, new FirebaseStorageManager.FireBaseStorageDownloadCallback() {
+            @Override
+            public void onSuccess(FileDownloadTask.TaskSnapshot task, File localFile) {
+                data.setValue(BitmapFactory.decodeFile(localFile.getAbsolutePath()));
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                data.setValue(null);
+            }
+        });
+
+        return data;
+    }
+
+    //TODO: add uploadimageforuser and downloadimageforuser
 
     /*
             end file upload region

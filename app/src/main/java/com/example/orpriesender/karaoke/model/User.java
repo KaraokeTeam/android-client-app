@@ -42,7 +42,7 @@ public class User {
     }
 
     public User() {
-
+        this.rating = 0;
     }
 
     @TypeConverter

@@ -300,7 +300,7 @@ public class TarsosActivity extends FragmentActivity {
         analyzer.stop();
         videoView.stopPlayback();
         spinner.setVisibility(View.VISIBLE);
-        String grade = grader.getGrade();
+        double grade = grader.getGrade2();
         final Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
         intent.putExtra("grade", grade);
         intent.putExtra("performanceFileName", analyzer.getRecordFileName());

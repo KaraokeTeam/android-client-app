@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -50,7 +51,7 @@ public class Grader {
     private double grade;
     private double maxGrade;
     private float performanceDuration;
-    private final double roomForError = 0.2;
+    private final double roomForError = 1;
 
     //the application context
     private Context context;
@@ -69,13 +70,14 @@ public class Grader {
     private boolean errorMode = false;
     private String songName;
     private List<Group> groups;
+    private List<Pitch> rightPerformance;
 
     private boolean onsetsCompleted = false, pitchesCompleted = false, groupsCompleted = false;
 
     public Grader(Context context, String songName) {
         this.context = context;
         this.songName = songName;
-
+        this.rightPerformance = new ArrayList();
         try {
             this.notes = getNotesMapFromJson();
 
@@ -85,6 +87,52 @@ public class Grader {
 
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    public void easyAlgo(Pitch pitch) {
+        if (pitch.getPitch() == -1 ||
+                pitch.getStart() < groups.get(0).getStartTime() ||
+                pitch.getStart() > groups.get(groups.size() - 1).getEndTime())
+            return;
+        Note given = getNoteFromHz(pitch.getPitch());
+        //given.getTheNextNote(1);
+        this.getCurrentGroup(pitch);
+        if (iterator == -1) {
+            return;
+        }
+        int tempIterator = iterator;
+        Group currentGroup = groups.get(tempIterator);
+		/*if (pitch.getStart() + roomForError >= (groups.get(tempIterator).getStartTime())) {
+			performancePitches.add(pitch);
+		} else {
+			return;
+		}*/
+        performancePitches.add(pitch);
+        while (tempIterator < groups.size() && pitch.getStart() + roomForError >= (groups.get(tempIterator).getStartTime())) {
+            if (given.isCorrectNote(currentGroup.getNote())) {
+                rightPerformance.add(pitch);
+                break;
+            }
+            tempIterator++;
+            if (tempIterator < groups.size()) {
+                currentGroup = groups.get(tempIterator);
+            }
+        }
+    }
+
+    public void getCurrentGroup(Pitch pitch) {
+        if (iterator != -1) {
+            if (groups.get(iterator).getEndTime() < (pitch.getStart() - roomForError)) {
+                if ((iterator + 1) < groups.size()) {
+                    iterator++;
+                    if (groups.get(iterator).getEndTime() < (pitch.getStart() - roomForError)) {
+                        getCurrentGroup(pitch);
+                    }
+                } else {
+                    iterator = -1;
+                }
+            }
         }
     }
 
@@ -233,7 +281,7 @@ public class Grader {
                     try {
                         Pitch p = queue.poll(1, TimeUnit.SECONDS);
                         if (p != null) {
-                            handlePitch(p);
+                            easyAlgo(p);
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
@@ -429,9 +477,9 @@ public class Grader {
         }
     }
 
-    public String getGrade() {
+    public double getGrade() {
         if (performancePitches.size() == 0) {
-            return "0";
+            return 0;
         }
         System.out.println("iterator : " + iterator);
         double performanceLength = getPerformanceLength();
@@ -443,7 +491,18 @@ public class Grader {
             grade += fillRate * groupGrade;
         }
         System.out.println("grade : " + grade);
-        return "" + grade;
+        return grade;
+    }
+
+    public double getGrade2() {
+        if (performancePitches.size() == 0) {
+            return 0;
+        }
+        double performanceLength = performancePitches.size();
+        double rightSamples = rightPerformance.size();
+        System.out.println("performanceLength: " + performanceLength + " rightSamples " + rightSamples);
+        grade = (rightSamples / performanceLength) * 100;
+        return grade;
     }
 
     public double getPerformanceLength(){

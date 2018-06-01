@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -48,7 +49,7 @@ public class ResultActivity extends FragmentActivity {
     private boolean isPlay = true;
 
     //members received from last activity
-    String result;
+    double result;
     String performanceFileName, userId, username, songName;
     int performanceLength;
     File performanceFile;
@@ -65,7 +66,7 @@ public class ResultActivity extends FragmentActivity {
         Intent intent = getIntent();
         performanceFile = (File) intent.getSerializableExtra("performanceFile");
         performanceFileName = intent.getStringExtra("performanceFileName");
-        result = intent.getStringExtra("grade");
+        result = intent.getDoubleExtra("grade",0);
         userId = intent.getStringExtra("uid");
         songName = intent.getStringExtra("song");
 
@@ -147,12 +148,12 @@ public class ResultActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 //configure the pop up dialog
-                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(ResultActivity.this);
+                AlertDialog.Builder dialogBuilder = new AlertDialog.Builder(new ContextThemeWrapper(ResultActivity.this, R.style.alertDialogCustom));
                 dialogBuilder.setTitle("Publish Performance");
                 dialogBuilder.setMessage("Please insert content");
 
                 //configure the inner text input
-                final EditText input = new EditText(ResultActivity.this);
+                final EditText input = new EditText(new ContextThemeWrapper(ResultActivity.this, R.style.alertDialogCustom));
                 LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
                 input.setLayoutParams(lp);
                 dialogBuilder.setView(input);
@@ -162,7 +163,7 @@ public class ResultActivity extends FragmentActivity {
                 dialogBuilder.setPositiveButton("Publish", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Post p = new Post(userId, username, input.getText().toString(), songName);
+                        Post p = new Post(userId, username, input.getText().toString(), songName,result);
                         KaraokeRepository.getInstance().addPost(p);
 
                         //start showing the progress bar and upload the performance

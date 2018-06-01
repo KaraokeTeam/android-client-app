@@ -16,6 +16,7 @@
         <item name="colorControlActivated">@color/text_color</item>
         <!--<item name="android:colorControlHighlight">@color/sagol</item>-->
         <item name="android:editTextColor">@color/text_color</item>
+        <item name="android:fontFamily">@font/moshefont</item>
     </style>
 
     <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
@@ -30,6 +31,23 @@
         <item name="android:textColorPrimaryInverse">@color/moshe_black</item>
         <item name="android:colorForeground">@color/moshe_black</item>
         <item name="android:navigationBarColor">@color/moshe_black_pressed</item>
+        <item name="android:fontFamily">@font/moshefont</item>
+    </style>
+
+    <style name="alertDialogCustom">
+        <item name="android:colorPrimary">@color/bordo</item>
+        <item name="android:colorPrimaryDark">@color/bordo</item>
+        <item name="android:colorAccent">@color/bordo</item>
+        <item name="colorAccent">@color/sagol</item>
+        <item name="android:textColor">@color/text_color</item>
+        <item name="android:textColorPrimary">@color/text_color</item>
+        <item name="android:textColorSecondary">@color/text_color</item>
+        <item name="android:textColorSecondaryInverse">@color/text_color</item>
+        <item name="android:textColorPrimaryInverse">@color/text_color</item>
+        <item name="android:colorForeground">@color/moshe_black</item>
+        <item name="android:navigationBarColor">@color/moshe_black_pressed</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:fontFamily">@font/moshefont</item>
     </style>
 
 

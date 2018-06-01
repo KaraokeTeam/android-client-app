@@ -38,6 +38,8 @@ import java.util.List;
  */
 
 public class UserProfileActivity extends FragmentActivity implements PostListFragment.onPlayClicked, PostListFragment.onUsernameClicked {
+    float userRating = 0;
+
     TextView username;
     TextView rating;
     ImageView profilePic;
@@ -75,6 +77,18 @@ public class UserProfileActivity extends FragmentActivity implements PostListFra
             public void onChanged(@Nullable List<Post> posts) {
                 if (posts.size() > 0) {
                     fragment.setPostsForUser(posts, userId);
+                    int userPostAmount = 0;
+                    for(int i = 0; i < posts.size(); i++){
+                        if(posts.get(i).getUserId().equals(userId)){
+                            userPostAmount++;
+                            userRating += posts.get(i).getGrade();
+                        }
+                    }
+                    if(userPostAmount > 0)
+                        userRating = userRating / userPostAmount;
+                    else userRating = 0;
+
+                    rating.setText("AVG: " + userRating);
                 }
             }
         });
@@ -86,7 +100,6 @@ public class UserProfileActivity extends FragmentActivity implements PostListFra
             @Override
             public void onChanged(@Nullable User user) {
                 username.setText(user.getUsername());
-                rating.setText("" + user.getRating());
                 applyProfilePicture(user);
                 spinner.setVisibility(View.GONE);
                 isCurrentUser = (user.getId().equals(FirebaseAuth.getInstance().getUid()));

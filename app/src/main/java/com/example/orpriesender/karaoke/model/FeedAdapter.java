@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,17 +75,22 @@ public class FeedAdapter extends BaseAdapter {
         //ImageView image = convertView.findViewById(R.id.user_image);
         TextView username = convertView.findViewById(R.id.username);
         TextView description = convertView.findViewById(R.id.description);
-        TextView time =  convertView.findViewById(R.id.time);
+        TextView time = convertView.findViewById(R.id.time);
+        TextView grade = convertView.findViewById(R.id.grade);
         final ImageView profilePic = convertView.findViewById(R.id.feed_item_profile_pic);
         final SeekBar seekBar = convertView.findViewById(R.id.seek_bar);
-        final ImageButton playPause =  convertView.findViewById(R.id.play_pause_button);
-        final ProgressBar spinner =  convertView.findViewById(R.id.feed_item_spinner);
+        final ImageButton playPause = convertView.findViewById(R.id.play_pause_button);
+        final ProgressBar spinner = convertView.findViewById(R.id.feed_item_spinner);
         final ProgressBar picSpinner = convertView.findViewById(R.id.feed_item_pic_spinner);
+
+
         picSpinner.setVisibility(View.GONE);
+
+        //when seek bar is changed update the post
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if(fromUser){
+                if (fromUser) {
                     posts.get(position).setAudioPosition(progress);
                 }
             }
@@ -104,6 +108,14 @@ public class FeedAdapter extends BaseAdapter {
 
         if (onUsernameClickedListener != null) {
             username.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onUsernameClickedListener.onUsernameClicked(posts.get(position).getUserId());
+                }
+            });
+
+            //profile pic has the same behavior as username
+            profilePic.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     onUsernameClickedListener.onUsernameClicked(posts.get(position).getUserId());
@@ -197,20 +209,20 @@ public class FeedAdapter extends BaseAdapter {
         picSpinner.setVisibility(View.VISIBLE);
         profilePic.setVisibility(View.GONE);
         Bitmap profilePicBitmap = posts.get(position).getProfilePic();
-        if(profilePicBitmap == null && onProfilePicNeeded != null){
+        if (profilePicBitmap == null && onProfilePicNeeded != null) {
             onProfilePicNeeded.onProfilePicNeeded(posts.get(position).getUserId(), new PostListFragment.onDownloadFinished() {
 
                 @Override
                 public void onDownloadFinished(File file) {
                     profilePic.setVisibility(View.VISIBLE);
                     picSpinner.setVisibility(View.GONE);
-                    if(file != null){
+                    if (file != null) {
                         Bitmap pic = BitmapFactory.decodeFile(file.getAbsolutePath());
                         profilePic.setImageBitmap(pic);
                         posts.get(position).setProfilePic(pic);
                     } else {
                         profilePic.setImageResource(R.drawable.default_profile_pic);
-                        posts.get(position).setProfilePic(BitmapFactory.decodeResource(parentActivity.getResources(),R.drawable.default_profile_pic));
+                        posts.get(position).setProfilePic(BitmapFactory.decodeResource(parentActivity.getResources(), R.drawable.default_profile_pic));
                     }
                 }
             });
@@ -221,13 +233,12 @@ public class FeedAdapter extends BaseAdapter {
         }
 
 
-
-
         convertView.setTag(position);
         username.setText(posts.get(position).getUsername());
         description.setText(posts.get(position).getDescription());
         time.setText(posts.get(position).getTime());
         seekBar.setProgress(posts.get(position).getAudioPosition());
+        grade.setText("grade : " + posts.get(position).getGrade());
 
         return convertView;
     }

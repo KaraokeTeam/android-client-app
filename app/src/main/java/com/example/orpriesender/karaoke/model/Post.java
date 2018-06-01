@@ -39,6 +39,8 @@ public class Post implements Serializable {
     private String songName;
     @ColumnInfo(name = "time")
     private String time;
+    @ColumnInfo(name = "grade")
+    private double grade;
 
     public double getLastUpdated() {
         return lastUpdated;
@@ -71,7 +73,7 @@ public class Post implements Serializable {
     private Bitmap profilePic;
 
 
-    public Post(String userId, String username, String description, String songName) {
+    public Post(String userId, String username, String description, String songName, double grade) {
         this.userId = userId;
         this.username = username;
         this.description = description;
@@ -82,6 +84,7 @@ public class Post implements Serializable {
         this.date = new Date();
         this.time = format.format(date);
         this.audioPosition = 0;
+        this.grade = grade;
     }
     @Ignore
     public Post() {
@@ -98,6 +101,14 @@ public class Post implements Serializable {
         }  finally{
             return this.date;
         }
+    }
+
+    public double getGrade() {
+        return grade;
+    }
+
+    public void setGrade(double grade) {
+        this.grade = grade;
     }
 
     public void setDate(Date date) {
@@ -152,6 +163,7 @@ public class Post implements Serializable {
         newMap.put("description", this.description);
         newMap.put("songName", this.songName);
         newMap.put("time", this.time);
+        newMap.put("grade",this.grade);
         return newMap;
     }
 

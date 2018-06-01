@@ -25,6 +25,7 @@ import com.example.orpriesender.karaoke.model.KaraokeRepository;
 import com.example.orpriesender.karaoke.model.LocalCacheManager;
 import com.example.orpriesender.karaoke.model.Post;
 import com.example.orpriesender.karaoke.model.RoomDatabaseManager;
+import com.example.orpriesender.karaoke.model.SongItem;
 import com.example.orpriesender.karaoke.model.User;
 import com.example.orpriesender.karaoke.view_model.PostListViewModel;
 import com.google.firebase.auth.FirebaseAuth;
@@ -96,6 +97,9 @@ public class FeedActivity extends FragmentActivity implements PostListFragment.o
 
         //after a user logged in - add it to users list or update it
         KaraokeRepository.getInstance().addUser(new User(FirebaseAuth.getInstance().getCurrentUser()));
+
+        //when adding a song run the application once with this
+        //KaraokeRepository.getInstance().addSong(new SongItem("Sam Smith - Im Not The Only One","sam"));
 
         profileButton = findViewById(R.id.all_posts_profile_button);
         singButton = findViewById(R.id.all_posts_sing_button);

@@ -161,7 +161,6 @@ public class UserProfileActivity extends FragmentActivity implements PostListFra
                 @Override
                 public void onSuccess(UploadTask.TaskSnapshot task) {
                     Util.presentToast(getApplicationContext(),getActivity(),"Upload succeeded", Toast.LENGTH_SHORT);
-                    String userId = FirebaseAuth.getInstance().getUid();
                     spinner.setVisibility(View.GONE);
                 }
 

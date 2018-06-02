@@ -346,7 +346,6 @@ public class KaraokeRepository {
         return data;
     }
 
-    //TODO: add uploadimageforuser and downloadimageforuser
 
     /*
             end file upload region

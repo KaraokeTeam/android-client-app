@@ -100,8 +100,10 @@
                 style="?android:attr/progressBarStyle"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="15dp"
+                android:layout_margin="12dp"
                 android:layout_weight="0"
+                android:maxHeight="55dp"
+                android:maxWidth="55dp"
                 android:visibility="gone" />
 
             <ImageButton

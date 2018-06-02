@@ -34,6 +34,8 @@ import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 
 /**
  * Created by Or Priesender on 11-Dec-17.
@@ -87,7 +89,8 @@ public class ResultActivity extends FragmentActivity {
 
         //set the text according to the information received
         result_number = findViewById(R.id.result_number);
-        result_number.setText(String.valueOf(result));
+        NumberFormat format = new DecimalFormat("#0.00");
+        result_number.setText(String.valueOf(format.format(result)));
 
         //configure the play button
         play = findViewById(R.id.activity_result_play);

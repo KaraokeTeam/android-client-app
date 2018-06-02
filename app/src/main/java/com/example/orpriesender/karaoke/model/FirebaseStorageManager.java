@@ -5,9 +5,11 @@ import android.support.annotation.NonNull;
 
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.FirebaseException;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.storage.StorageException;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
@@ -100,8 +102,8 @@ public class FirebaseStorageManager {
     }
 
     void downloadImageForUser(String userId, final FireBaseStorageDownloadCallback callback) {
-        StorageReference ref = FirebaseStorage.getInstance().getReference().child("images/" + userId + ".jpeg");
         try {
+            StorageReference ref = FirebaseStorage.getInstance().getReference().child("images/" + userId + ".jpeg");
             final File localFile = File.createTempFile(userId, ".jpeg");
             localFile.deleteOnExit();
             ref.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
@@ -118,7 +120,7 @@ public class FirebaseStorageManager {
                     localFile.delete();
                 }
             });
-        } catch (IOException e) {
+        } catch (IOException  e ) {
             e.printStackTrace();
         }
     }

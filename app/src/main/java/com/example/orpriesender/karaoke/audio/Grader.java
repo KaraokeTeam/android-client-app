@@ -135,19 +135,19 @@ public class Grader {
             }
         }
     }
-
-    public void checkIfReady(InitCallback callback) {
-        synchronized (this) {
-            if (onsetsCompleted && pitchesCompleted && groupsCompleted) {
-                if (sourceOnsets == null || sourcePitches == null || groups == null) {
-                    callback.onReady(false);
-                } else {
-                    callback.onReady(true);
-                }
-            }
-        }
-
-    }
+//unused
+//    public void checkIfReady(InitCallback callback) {
+//        synchronized (this) {
+//            if (onsetsCompleted && pitchesCompleted && groupsCompleted) {
+//                if (sourceOnsets == null || sourcePitches == null || groups == null) {
+//                    callback.onReady(false);
+//                } else {
+//                    callback.onReady(true);
+//                }
+//            }
+//        }
+//
+//    }
 
     public void init(final InitCallback callback) {
         this.currentOffset = 0;

@@ -19,6 +19,8 @@ import com.example.orpriesender.karaoke.controller.PostListFragment;
 import com.example.orpriesender.karaoke.util.PostListMediaPlayer;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 
 /**
@@ -238,7 +240,8 @@ public class FeedAdapter extends BaseAdapter {
         description.setText(posts.get(position).getDescription());
         time.setText(posts.get(position).getTime());
         seekBar.setProgress(posts.get(position).getAudioPosition());
-        grade.setText("grade : " + posts.get(position).getGrade());
+        NumberFormat formatter = new DecimalFormat("#0.00");
+        grade.setText("grade : " + formatter.format(posts.get(position).getGrade()));
 
         return convertView;
     }

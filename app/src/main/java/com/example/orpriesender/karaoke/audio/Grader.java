@@ -93,7 +93,8 @@ public class Grader {
     public void easyAlgo(Pitch pitch) {
         if (pitch.getPitch() == -1 ||
                 pitch.getStart() < groups.get(0).getStartTime() ||
-                pitch.getStart() > groups.get(groups.size() - 1).getEndTime())
+                pitch.getStart() > groups.get(groups.size() - 1).getEndTime()||
+                pitch.getConfidence() < 0.8)
             return;
         Note given = getNoteFromHz(pitch.getPitch());
         //given.getTheNextNote(1);

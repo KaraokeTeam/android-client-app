@@ -204,6 +204,7 @@ public class TarsosActivity extends FragmentActivity {
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                stopListening();
                 finish();
             }
         });

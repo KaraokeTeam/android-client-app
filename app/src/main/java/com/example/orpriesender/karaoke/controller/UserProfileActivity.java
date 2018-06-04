@@ -30,6 +30,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.File;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.List;
 
 
@@ -87,8 +89,8 @@ public class UserProfileActivity extends FragmentActivity implements PostListFra
                     if(userPostAmount > 0)
                         userRating = userRating / userPostAmount;
                     else userRating = 0;
-
-                    rating.setText("AVG: " + userRating);
+                    NumberFormat formatter = new DecimalFormat("#0.00");
+                    rating.setText("AVG: " + formatter.format(userRating));
                 }
             }
         });

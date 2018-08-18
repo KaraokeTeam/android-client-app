@@ -21,21 +21,25 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.orpriesender.karaoke.model.FirebaseStorageManager;
-import com.example.orpriesender.karaoke.model.KaraokeRepository;
-import com.example.orpriesender.karaoke.model.Post;
+import com.example.orpriesender.karaoke.audio.Grader;
+import com.example.orpriesender.karaoke.model.*;
 import com.example.orpriesender.karaoke.R;
-import com.example.orpriesender.karaoke.model.User;
 import com.example.orpriesender.karaoke.util.Util;
 import com.example.orpriesender.karaoke.view_model.ResultViewModel;
 import com.example.orpriesender.karaoke.view_model.ResultViewModelFactory;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.storage.UploadTask;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.helper.StaticLabelsFormatter;
+import com.jjoe64.graphview.series.DataPoint;
+import com.jjoe64.graphview.series.LineGraphSeries;
 
 import java.io.File;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by Or Priesender on 11-Dec-17.
@@ -55,6 +59,7 @@ public class ResultActivity extends FragmentActivity {
     String performanceFileName, userId, username, songName;
     int performanceLength;
     File performanceFile;
+    GraphData graphData;
 
     ResultViewModel vm;
 
@@ -71,6 +76,9 @@ public class ResultActivity extends FragmentActivity {
         result = intent.getDoubleExtra("grade",0);
         userId = intent.getStringExtra("uid");
         songName = intent.getStringExtra("song");
+        this.graphData = (GraphData) intent.getSerializableExtra("graphData");
+        drawGraph(this.graphData);
+
 
         //get the username from the view model and disable the publish button
         publish = findViewById(R.id.activity_result_publish_button);
@@ -124,11 +132,11 @@ public class ResultActivity extends FragmentActivity {
             @Override
             public void onClick(View v) {
                 if (isPlay) {
-                    play.setImageResource(R.drawable.pause_btn_purple_big);
+                    play.setImageResource(R.drawable.pause_btn);
                     isPlay = false;
                     player.start();
                 } else {
-                    play.setImageResource(R.drawable.play_btn_purple_big);
+                    play.setImageResource(R.drawable.play_btn);
                     isPlay = true;
                     player.pause();
                 }
@@ -212,5 +220,76 @@ public class ResultActivity extends FragmentActivity {
                ResultActivity.super.onBackPressed();
             }
         });
+    }
+
+    private void drawGraph(GraphData graphData){
+        GraphView graphView = findViewById(R.id.graphView);
+        List<NoteTimePair> source = graphData.getSource();
+        List<NoteTimePair> performance = graphData.getPerformance();
+
+        float shortestTime = source.get(source.size() - 1).getTime() < performance.get(performance.size() - 1).getTime() ? source.get(source.size() - 1).getTime() : performance.get(performance.size() - 1).getTime();
+        int shortestLength = source.size() < performance.size() ? source.size() : performance.size();
+
+        List<DataPoint> sourcePoints = new ArrayList<>();
+        for(int i=0; i < source.size(); i++){
+            float time = source.get(i).getTime();
+            int noteIndex = source.get(i).getNoteIndex();
+            if(time <= shortestTime){
+                sourcePoints.add(new DataPoint(time,noteIndex));
+            }
+        }
+        DataPoint[] sourcePointsArr = new DataPoint[sourcePoints.size()];
+        sourcePointsArr = sourcePoints.toArray(sourcePointsArr);
+        LineGraphSeries<DataPoint> sourceSeries = new LineGraphSeries<>(sourcePointsArr);
+
+        List<DataPoint> performancePoints = new ArrayList<>();
+        for(int i=0; i < performance.size(); i++){
+            float time = performance.get(i).getTime();
+            int noteIndex = performance.get(i).getNoteIndex();
+            if(time <= shortestTime){
+                performancePoints.add(new DataPoint(time,noteIndex));
+            }
+
+        }
+        DataPoint[] performancePointsArr = new DataPoint[performancePoints.size()];
+        performancePointsArr = performancePoints.toArray(performancePointsArr);
+        LineGraphSeries<DataPoint> performanceSeries = new LineGraphSeries<>(performancePointsArr);
+
+        sourceSeries.setColor(R.color.red);
+        sourceSeries.setBackgroundColor(R.color.redTransperent);
+        sourceSeries.setDrawBackground(true);
+
+        performanceSeries.setColor(R.color.sagol);
+        performanceSeries.setThickness(10);
+        performanceSeries.setBackgroundColor(R.color.sagolTransperent);
+        performanceSeries.setDrawBackground(true);
+
+        graphView.getViewport().setYAxisBoundsManual(true);
+        graphView.getViewport().setMinY(-2);
+        graphView.getViewport().setMaxY(14);
+
+        graphView.getViewport().setXAxisBoundsManual(true);
+        graphView.getViewport().setMinX(-1);
+        graphView.getViewport().setMaxX(shortestTime + 2);
+
+        // enable scaling and scrolling
+        graphView.getViewport().setScalable(true);
+        graphView.getViewport().setScalableY(true);
+
+        graphView.getViewport().setScrollable(true);
+        graphView.getViewport().setScrollableY(true);
+
+        StaticLabelsFormatter staticLabelsFormatter = new StaticLabelsFormatter(graphView);
+        staticLabelsFormatter.setVerticalLabels(Note.getNoteArr());
+        graphView.getGridLabelRenderer().setLabelFormatter(staticLabelsFormatter);
+        graphView.getGridLabelRenderer().setVerticalAxisTitle("Note");
+        graphView.getGridLabelRenderer().setHorizontalAxisTitle("Time");
+        graphView.getGridLabelRenderer().setNumVerticalLabels(12);
+        graphView.getGridLabelRenderer().reloadStyles();
+
+
+        graphView.setTitle("Your Performance");
+        graphView.addSeries(sourceSeries);
+        graphView.addSeries(performanceSeries);
     }
 }

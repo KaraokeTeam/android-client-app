@@ -28,6 +28,10 @@ public class AuthActivity extends Activity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if(user != null) startFeedActivity(user);
+
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build());
 
@@ -49,13 +53,10 @@ public class AuthActivity extends Activity {
 
         if (requestCode == RC_SIGN_IN) {
             IdpResponse response = IdpResponse.fromResultIntent(data);
-
             if (resultCode == Activity.RESULT_OK) {
                 // Successfully signed in
                 FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                Intent intent = new Intent(getApplicationContext(), FeedActivity.class);
-                intent.putExtra("user", user.getUid());
-                startActivity(intent);
+                startFeedActivity(user);
             } else {
                 Context context = getApplicationContext();
                 if (response != null) {
@@ -71,6 +72,13 @@ public class AuthActivity extends Activity {
 
             }
         }
+    }
+
+    public void startFeedActivity(FirebaseUser user){
+        Intent intent = new Intent(getApplicationContext(), FeedActivity.class);
+        intent.putExtra("user", user.getUid());
+        startActivity(intent);
+        finish();
     }
 
 

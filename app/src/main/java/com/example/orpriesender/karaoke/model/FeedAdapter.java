@@ -175,7 +175,6 @@ public class FeedAdapter extends BaseAdapter {
                             int currentPosition = PostListMediaPlayer.getInstance().getPosition();
                             posts.get(position).setAudioPosition(currentPosition);
                             seekBar.setProgress(currentPosition);
-
                             isPlaying = false;
 
                         } else { //on press play and performance was downloaded

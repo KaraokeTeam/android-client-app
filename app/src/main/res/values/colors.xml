@@ -10,5 +10,10 @@
     <color name="text_color">#F2F2F2</color>
     <color name="bordo">#7F0909</color>
     <color name="sagol">#563C8E</color>
-
+    <color name="sagolTransperent">#563C8E99</color>
+    <color name="bordoTransperent">#7F090999</color>
+    <color name="redTransperent">#f44242</color>
+    <color name="red">#f44242</color>
+    <color name="yellow">#f9f61d</color>
+    <color name="green">#1bf407</color>
 </resources>

@@ -17,9 +17,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
 
+import be.tarsos.dsp.util.FFMPEGDownloader;
 import com.example.orpriesender.karaoke.R;
 import com.example.orpriesender.karaoke.model.KaraokeRepository;
 import com.example.orpriesender.karaoke.model.LocalCacheManager;
@@ -51,6 +53,7 @@ public class FeedActivity extends FragmentActivity implements PostListFragment.o
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         this.savedInstanceState = savedInstanceState;
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_feed);
         if (checkAndRequestPermissions()) {
             createActivity();

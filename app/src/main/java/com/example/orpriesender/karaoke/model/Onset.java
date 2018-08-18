@@ -1,10 +1,12 @@
 package com.example.orpriesender.karaoke.model;
 
+import java.io.Serializable;
+
 /**
  * Created by Or Priesender on 12-Jan-18.
  */
 
-public class Onset {
+public class Onset implements Serializable{
     private float time;
 
     public Onset(float time) {
@@ -23,4 +25,6 @@ public class Onset {
     public String toString() {
         return "TIME : " + this.getTime();
     }
+
+
 }

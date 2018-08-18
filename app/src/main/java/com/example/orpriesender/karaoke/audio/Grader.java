@@ -4,20 +4,13 @@ import android.content.Context;
 import android.util.Log;
 
 import com.example.orpriesender.karaoke.file_readers.GroupReader;
+import com.example.orpriesender.karaoke.file_readers.JsonGroup;
 import com.example.orpriesender.karaoke.file_readers.ReaderCallback;
-import com.example.orpriesender.karaoke.model.FirebaseStorageManager;
-import com.example.orpriesender.karaoke.model.Group;
-import com.example.orpriesender.karaoke.model.KaraokeRepository;
-import com.example.orpriesender.karaoke.model.Note;
-import com.example.orpriesender.karaoke.model.Onset;
-import com.example.orpriesender.karaoke.model.Pitch;
+import com.example.orpriesender.karaoke.model.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.storage.FileDownloadTask;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,14 +26,14 @@ import java.util.concurrent.TimeUnit;
  */
 
 //grading a performance according to source files
-public class Grader {
+public class Grader implements Serializable{
 
     public interface InitCallback {
         void onReady(boolean success);
     }
 
-    public interface GradeCallback {
-        void onGrade(double grade);
+    public interface NoteDistanceUpdates{
+        void onUpdate(int distance);
     }
 
     private List<Pitch> sourcePitches = null;
@@ -71,84 +64,27 @@ public class Grader {
     private String songName;
     private List<Group> groups;
     private List<Pitch> rightPerformance;
+    private NoteDistanceUpdates updater;
 
     private boolean onsetsCompleted = false, pitchesCompleted = false, groupsCompleted = false;
 
-    public Grader(Context context, String songName) {
+    public Grader(Context context, String songName, NoteDistanceUpdates updater) {
         this.context = context;
         this.songName = songName;
         this.rightPerformance = new ArrayList();
+        this.updater = updater;
         try {
             this.notes = getNotesMapFromJson();
-
-            //extracts the file from the assets folder and gives it to the pitch and onset readers
-            //this.sourcePitches = PitchReader.readPitchesFromFile(loadFileToStorage(context.getAssets().open(sourcePitchFile), "sourcePitch"));
-            //this.sourceOnsets = OnsetReader.readOnsetsFromFile(loadFileToStorage(context.getAssets().open(sourceOnsetFile), "sourceOnset"));
-
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    public void easyAlgo(Pitch pitch) {
-        if (pitch.getPitch() == -1 ||
-                pitch.getStart() < groups.get(0).getStartTime() ||
-                pitch.getStart() > groups.get(groups.size() - 1).getEndTime()||
-                pitch.getConfidence() < 0.8)
-            return;
-        Note given = getNoteFromHz(pitch.getPitch());
-        //given.getTheNextNote(1);
-        this.getCurrentGroup(pitch);
-        if (iterator == -1) {
-            return;
-        }
-        int tempIterator = iterator;
-        Group currentGroup = groups.get(tempIterator);
-		/*if (pitch.getStart() + roomForError >= (groups.get(tempIterator).getStartTime())) {
-			performancePitches.add(pitch);
-		} else {
-			return;
-		}*/
-        performancePitches.add(pitch);
-        while (tempIterator < groups.size() && pitch.getStart() + roomForError >= (groups.get(tempIterator).getStartTime())) {
-            if (given.isCorrectNote(currentGroup.getNote())) {
-                rightPerformance.add(pitch);
-                break;
-            }
-            tempIterator++;
-            if (tempIterator < groups.size()) {
-                currentGroup = groups.get(tempIterator);
-            }
-        }
+    public Grader(){
+
     }
 
-    public void getCurrentGroup(Pitch pitch) {
-        if (iterator != -1) {
-            if (groups.get(iterator).getEndTime() < (pitch.getStart() - roomForError)) {
-                if ((iterator + 1) < groups.size()) {
-                    iterator++;
-                    if (groups.get(iterator).getEndTime() < (pitch.getStart() - roomForError)) {
-                        getCurrentGroup(pitch);
-                    }
-                } else {
-                    iterator = -1;
-                }
-            }
-        }
-    }
-//unused
-//    public void checkIfReady(InitCallback callback) {
-//        synchronized (this) {
-//            if (onsetsCompleted && pitchesCompleted && groupsCompleted) {
-//                if (sourceOnsets == null || sourcePitches == null || groups == null) {
-//                    callback.onReady(false);
-//                } else {
-//                    callback.onReady(true);
-//                }
-//            }
-//        }
-//
-//    }
+
 
     public void init(final InitCallback callback) {
         this.currentOffset = 0;
@@ -227,6 +163,123 @@ public class Grader {
         }
     }
 
+    public void start() {
+        queue = new ArrayBlockingQueue<>(20);
+        this.keepGoing = true;
+        thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (keepGoing || !queue.isEmpty()) {
+                    try {
+                        Pitch p = queue.poll(1, TimeUnit.SECONDS);
+                        if (p != null) {
+                            easyAlgo(p);
+                        }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        });
+        thread.start();
+    }
+
+    public void stop() {
+        try {
+            keepGoing = false;
+            if (thread != null)
+                thread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void easyAlgo(Pitch pitch) {
+        if (pitch.getPitch() == -1 ||
+                pitch.getStart() < groups.get(0).getStartTime() ||
+                pitch.getStart() > groups.get(groups.size() - 1).getEndTime()||
+                pitch.getConfidence() < 0.8)
+            return;
+
+        Note given = getNoteFromHz(pitch.getPitch());
+
+        this.getCurrentGroup(pitch);
+
+        if (iterator == -1) {
+            return;
+        }
+        int tempIterator = iterator;
+        Group currentGroup = groups.get(tempIterator);
+
+        performancePitches.add(pitch);
+
+        //update the UI on note distance
+        updater.onUpdate(currentGroup.getNote().distanceWithNegative(given));
+
+        while (tempIterator < groups.size() && pitch.getStart() + roomForError >= (groups.get(tempIterator).getStartTime())) {
+            if (currentGroup.getNote().isCorrectNote(given)) {
+                rightPerformance.add(pitch);
+                break;
+            }
+            tempIterator++;
+            if (tempIterator < groups.size()) {
+                currentGroup = groups.get(tempIterator);
+            }
+        }
+    }
+
+    private boolean noteWithinRange(Pitch pitch, Group group, double range) {
+        if (pitch.getStart() >= group.getStartTime() - range && pitch.getStart() <= group.getEndTime() + range) {
+            return true;
+        }
+        return false;
+    }
+
+    public void getCurrentGroup(Pitch pitch) {
+        if (iterator != -1) {
+            if (groups.get(iterator).getEndTime() < (pitch.getStart() - roomForError)) {
+                if ((iterator + 1) < groups.size()) {
+                    iterator++;
+                    if (groups.get(iterator).getEndTime() < (pitch.getStart() - roomForError)) {
+                        getCurrentGroup(pitch);
+                    }
+                } else {
+                    iterator = -1;
+                }
+            }
+        }
+    }
+
+    public void insertPitch(Pitch p) {
+        if (p != null) {
+            try {
+                queue.put(p);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //save the current given onset and analyze it
+    public void consumeOnset(Onset onset) {
+
+        this.performanceOnsets.add(onset);
+    }
+//unused
+//    public void checkIfReady(InitCallback callback) {
+//        synchronized (this) {
+//            if (onsetsCompleted && pitchesCompleted && groupsCompleted) {
+//                if (sourceOnsets == null || sourcePitches == null || groups == null) {
+//                    callback.onReady(false);
+//                } else {
+//                    callback.onReady(true);
+//                }
+//            }
+//        }
+//
+//    }
+
     private Map<String, List<Double>> getNotesMapFromJson() throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         HashMap<String, List<Double>> map =
@@ -272,54 +325,6 @@ public class Grader {
 
     }
 
-    public void start() {
-        queue = new ArrayBlockingQueue<>(20);
-        this.keepGoing = true;
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (keepGoing || !queue.isEmpty()) {
-                    try {
-                        Pitch p = queue.poll(1, TimeUnit.SECONDS);
-                        if (p != null) {
-                            easyAlgo(p);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-        });
-        thread.start();
-    }
-
-    public void stop() {
-        try {
-            keepGoing = false;
-            if (thread != null)
-                thread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-    }
-
-    public void insertPitch(Pitch p) {
-        if (p != null) {
-            try {
-                queue.put(p);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    //save the current given onset and analyze it
-    public void consumeOnset(Onset onset) {
-        this.performanceOnsets.add(onset);
-    }
-
     //save the current given pitch and analyze it
     public void consumePitch(Pitch pitch) {
         boolean correct = false;
@@ -349,7 +354,6 @@ public class Grader {
             }
         }
     }
-
     public void newAlgorithm(Pitch pitch) {
         if (pitch.getPitch() == -1)
             return;
@@ -433,12 +437,7 @@ public class Grader {
 
     }
 
-    private boolean noteWithinRange(Pitch pitch, Group group, double range) {
-        if (pitch.getStart() >= group.getStartTime() - range && pitch.getStart() <= group.getEndTime() + range) {
-            return true;
-        }
-        return false;
-    }
+
 
 
     private File loadFileToStorage(InputStream input, String name) throws IOException {
@@ -460,6 +459,31 @@ public class Grader {
             }
         }
         return null;
+    }
+
+    public GraphData getGraphData(){
+        if(performancePitches.size() == 0 || groups.size() == 0){
+            return null;
+        }
+
+        List<NoteTimePair> performance = new ArrayList<>();
+        List<NoteTimePair> source = new ArrayList<>();
+
+        for(int i=0; i < groups.size(); i++){
+            Group currentGroup = groups.get(i);
+            Note currentNote = currentGroup.getNote();
+            source.add(new NoteTimePair(currentNote.getNote(),currentNote.getNoteIndex(),currentGroup.getMiddleTime()));
+        }
+
+        List<Group> performanceGroups = this.getGroups(performancePitches);
+        for(int i=0; i < performanceGroups.size(); i++){
+            Group currentGroup = performanceGroups.get(i);
+            Note currentNote = currentGroup.getNote();
+            performance.add(new NoteTimePair(currentNote.getNote(),currentNote.getNoteIndex(),currentGroup.getMiddleTime()));
+        }
+
+        return new GraphData(performance,source);
+
     }
 
     public void printSourcePitches() {
@@ -513,4 +537,229 @@ public class Grader {
         return performanceDuration;
     }
 
+    public List<Group> getGroups(List<Pitch> pitches){
+        String currentNote = null;
+        Group currentGroup = new Group();
+        if(pitches.size() == 0) return null;
+        currentGroup.setNote(new Note(""));
+
+        float totalTime = pitches.get(pitches.size() - 1).getEnd() - pitches.get(0).getStart();
+
+        List<Group> results = new ArrayList<>();
+
+        for(int i=0; i < pitches.size(); i++){
+            Pitch currentPitch = pitches.get(i);
+            currentNote = getNoteFromHz(currentPitch.getPitch()).getNote();
+
+            if(currentGroup.getNote().getNote().equalsIgnoreCase(currentNote)){
+                currentGroup.addToAllSamples(currentPitch);
+            } else {
+                currentGroup.updateStartTime();
+                currentGroup.updateEndTime();
+                currentGroup.updateDuration();
+                currentGroup.updateFillRate(totalTime);
+                results.add(currentGroup);
+
+                currentGroup = new Group();
+                currentGroup.setNote(new Note(currentNote));
+                currentGroup.addToAllSamples(currentPitch);
+            }
+        }
+        return results;
+    }
+
+    public List<JsonGroup> getJsonGroups(List<Group> groups){
+        List<JsonGroup> results = new ArrayList<>();
+        for(int i=0 ; i < groups.size(); i++){
+            results.add(new JsonGroup(groups.get(i)));
+        }
+        System.out.println("PRINTING GROUPS JSON");
+        System.out.println("SIZE IS " + results.size());
+        System.out.println(results.toString());
+        return results;
+    }
+
+    public List<Pitch> getSourcePitches() {
+        return sourcePitches;
+    }
+
+    public void setSourcePitches(List<Pitch> sourcePitches) {
+        this.sourcePitches = sourcePitches;
+    }
+
+    public List<Onset> getSourceOnsets() {
+        return sourceOnsets;
+    }
+
+    public void setSourceOnsets(List<Onset> sourceOnsets) {
+        this.sourceOnsets = sourceOnsets;
+    }
+
+    public List<Pitch> getPerformancePitches() {
+        return performancePitches;
+    }
+
+    public void setPerformancePitches(List<Pitch> performancePitches) {
+        this.performancePitches = performancePitches;
+    }
+
+    public List<Onset> getPerformanceOnsets() {
+        return performanceOnsets;
+    }
+
+    public void setPerformanceOnsets(List<Onset> performanceOnsets) {
+        this.performanceOnsets = performanceOnsets;
+    }
+
+    public int getIterator() {
+        return iterator;
+    }
+
+    public void setIterator(int iterator) {
+        this.iterator = iterator;
+    }
+
+    public void setGrade(double grade) {
+        this.grade = grade;
+    }
+
+    public double getMaxGrade() {
+        return maxGrade;
+    }
+
+    public void setMaxGrade(double maxGrade) {
+        this.maxGrade = maxGrade;
+    }
+
+    public float getPerformanceDuration() {
+        return performanceDuration;
+    }
+
+    public void setPerformanceDuration(float performanceDuration) {
+        this.performanceDuration = performanceDuration;
+    }
+
+    public double getRoomForError() {
+        return roomForError;
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    public Map<String, List<Double>> getNotes() {
+        return notes;
+    }
+
+    public void setNotes(Map<String, List<Double>> notes) {
+        this.notes = notes;
+    }
+
+    public int getCurrentOffset() {
+        return currentOffset;
+    }
+
+    public void setCurrentOffset(int currentOffset) {
+        this.currentOffset = currentOffset;
+    }
+
+    public double getMistakes() {
+        return mistakes;
+    }
+
+    public void setMistakes(double mistakes) {
+        this.mistakes = mistakes;
+    }
+
+    public ArrayBlockingQueue<Pitch> getQueue() {
+        return queue;
+    }
+
+    public void setQueue(ArrayBlockingQueue<Pitch> queue) {
+        this.queue = queue;
+    }
+
+    public boolean isKeepGoing() {
+        return keepGoing;
+    }
+
+    public void setKeepGoing(boolean keepGoing) {
+        this.keepGoing = keepGoing;
+    }
+
+    public Thread getThread() {
+        return thread;
+    }
+
+    public void setThread(Thread thread) {
+        this.thread = thread;
+    }
+
+    public boolean isErrorMode() {
+        return errorMode;
+    }
+
+    public void setErrorMode(boolean errorMode) {
+        this.errorMode = errorMode;
+    }
+
+    public String getSongName() {
+        return songName;
+    }
+
+    public void setSongName(String songName) {
+        this.songName = songName;
+    }
+
+    public List<Group> getGroups() {
+        return groups;
+    }
+
+    public void setGroups(List<Group> groups) {
+        this.groups = groups;
+    }
+
+    public List<Pitch> getRightPerformance() {
+        return rightPerformance;
+    }
+
+    public void setRightPerformance(List<Pitch> rightPerformance) {
+        this.rightPerformance = rightPerformance;
+    }
+
+    public NoteDistanceUpdates getUpdater() {
+        return updater;
+    }
+
+    public void setUpdater(NoteDistanceUpdates updater) {
+        this.updater = updater;
+    }
+
+    public boolean isOnsetsCompleted() {
+        return onsetsCompleted;
+    }
+
+    public void setOnsetsCompleted(boolean onsetsCompleted) {
+        this.onsetsCompleted = onsetsCompleted;
+    }
+
+    public boolean isPitchesCompleted() {
+        return pitchesCompleted;
+    }
+
+    public void setPitchesCompleted(boolean pitchesCompleted) {
+        this.pitchesCompleted = pitchesCompleted;
+    }
+
+    public boolean isGroupsCompleted() {
+        return groupsCompleted;
+    }
+
+    public void setGroupsCompleted(boolean groupsCompleted) {
+        this.groupsCompleted = groupsCompleted;
+    }
 }

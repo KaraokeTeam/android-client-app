@@ -1,10 +1,12 @@
 package com.example.orpriesender.karaoke.model;
 
+import java.io.Serializable;
+
 /**
  * Created by Or Priesender on 08-Jan-18.
  */
 
-public class Pitch {
+public class Pitch implements Serializable{
 
     private float pitch;
     private float start;
@@ -17,6 +19,10 @@ public class Pitch {
         this.start = start;
         this.end = end;
         this.confidence = confidence;
+
+    }
+
+    public Pitch(){
 
     }
 
@@ -66,4 +72,6 @@ public class Pitch {
     public String toString() {
         return "PITCH : " + this.getPitch() + " START : " + this.getStart() + " CONF : " + this.getConfidence();
     }
+
+
 }

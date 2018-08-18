@@ -15,7 +15,7 @@ public class Note {
     String note;
     int octave;
     double error;
-
+    public static List<String> noteArr = Arrays.asList("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
 
     public Note(String note, int octave, double error) {
         this.note = note;
@@ -68,19 +68,32 @@ public class Note {
     }
 
     public int distance(Note note) {
-        List<String> noteArr = Arrays.asList("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B");
         return Math.abs(noteArr.indexOf(this.getNote()) - noteArr.indexOf(note.getNote()));
+    }
+
+    public int distanceWithNegative(Note note){
+        return -1 * (noteArr.indexOf(this.getNote()) - noteArr.indexOf(note.getNote()));
     }
 
     public boolean isCorrectNote(Note note)
     {
         int d = this.distance(note);
-        Log.d("Tag"," "+ d);
+        Log.d("Tag","Distnace between " + this.getNote() + " and " + note.getNote() + " is " + d);
         if (d==0 || d==1 || d==11) {
             return true;
         }
         else{
             return false;
         }
+    }
+
+    public int getNoteIndex(){
+        return noteArr.indexOf(this.getNote());
+    }
+
+    public static String[] getNoteArr(){
+        String[] strArr = new String[noteArr.size()];
+        strArr = noteArr.toArray(strArr);
+        return strArr;
     }
 }

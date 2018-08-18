@@ -8,6 +8,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -22,14 +23,11 @@ import android.widget.VideoView;
 
 import com.example.orpriesender.karaoke.audio.AudioAnalyzer;
 import com.example.orpriesender.karaoke.audio.Grader;
-import com.example.orpriesender.karaoke.model.KaraokeRepository;
-import com.example.orpriesender.karaoke.model.Onset;
-import com.example.orpriesender.karaoke.model.Pitch;
+import com.example.orpriesender.karaoke.file_readers.GroupWriter;
+import com.example.orpriesender.karaoke.model.*;
 import com.example.orpriesender.karaoke.R;
-import com.example.orpriesender.karaoke.model.SongItem;
 import com.example.orpriesender.karaoke.util.Util;
 import com.example.orpriesender.karaoke.view_model.TarsosViewModel;
-import com.example.orpriesender.karaoke.model.User;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.firebase.auth.FirebaseAuth;
 
@@ -43,7 +41,6 @@ import be.tarsos.dsp.pitch.PitchDetectionResult;
 
 
 public class TarsosActivity extends FragmentActivity {
-
 
     public interface DataFetchCallback {
         public void onDataReady(boolean success);
@@ -103,7 +100,18 @@ public class TarsosActivity extends FragmentActivity {
                         songName = song.getSystemName();
                         Log.d("TAG","system name is " + songName);
                         //create a grader with relevant sources
-                        grader = new Grader(getApplicationContext(), song.getSystemName());
+                        grader = new Grader(getApplicationContext(), song.getSystemName(), new Grader.NoteDistanceUpdates() {
+                            @Override
+                            public void onUpdate(final int distance) {
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+//                                        noteText.setTextColor(getColorFromDistance(distance));
+                                    }
+                                });
+
+                            }
+                        });
                         spinner.setVisibility(View.VISIBLE);
                         fetchSources(song.getSystemName(),new DataFetchCallback() {
                             @Override
@@ -115,6 +123,7 @@ public class TarsosActivity extends FragmentActivity {
                                     if (videoPath != null) {
                                         videoView.setVideoPath(videoPath);
                                     }
+
                                 } else {
                                     Util.presentToast(getApplicationContext(),TarsosActivity.this,"Failed downloading required sources", Toast.LENGTH_LONG);
                                 }
@@ -130,29 +139,15 @@ public class TarsosActivity extends FragmentActivity {
             }
         });
 
-
-
-
         //set a pitch handler
         final PitchDetectionHandler pitchDetectionHandler = new PitchDetectionHandler() {
             @Override
             public void handlePitch(final PitchDetectionResult res, final AudioEvent e) {
                 final float pitchInHz = res.getPitch();
-                grader.insertPitch(new Pitch(pitchInHz, new Float(e.getTimeStamp()), new Float(e.getEndTimeStamp()), res.getProbability()));
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (res.getPitch() != -1) {
-                            pitchText.setText("Pitch: " + pitchInHz);
-                            noteText.setText("Note: " + grader.getNoteFromHz(pitchInHz).getNote());
-                        } else {
-                            pitchText.setText("0.00");
-                            noteText.setText("--");
-                        }
-                    }
-                });
+                insertPitch(grader,new Pitch(pitchInHz, new Float(e.getTimeStamp()), new Float(e.getEndTimeStamp()), res.getProbability()));
             }
         };
+
 
         //set an onset handler
         final OnsetHandler onsetHandler = new OnsetHandler() {
@@ -170,6 +165,8 @@ public class TarsosActivity extends FragmentActivity {
         analyzer.setOnsetHandler(onsetHandler);
         analyzer.setRecordFile(songName);
         analyzer.init();
+
+
 
         //start listening
         startListeningButton.setOnClickListener(new View.OnClickListener() {
@@ -255,6 +252,13 @@ public class TarsosActivity extends FragmentActivity {
         }
     }
 
+    private int getColorFromDistance(int distance){
+        distance = Math.abs(distance);
+        if(distance  > 4) return ContextCompat.getColor(getApplicationContext(),R.color.red);
+        else if(distance <= 4 && distance >= 2) return ContextCompat.getColor(getApplicationContext(),R.color.yellow);
+        else return ContextCompat.getColor(getApplicationContext(),R.color.green);
+    }
+
     private void initGrader(final DataFetchCallback callback) {
                 grader.init(new Grader.InitCallback() {
                     @Override
@@ -297,20 +301,43 @@ public class TarsosActivity extends FragmentActivity {
         //        videoView.setMediaController(controller);
     }
 
+    private void insertPitch(final Grader grader, final Pitch pitch){
+        grader.insertPitch(pitch);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if (pitch.getPitch() != -1) {
+                    pitchText.setText("Pitch: " + pitch.getPitch());
+                    noteText.setText("Note: " + grader.getNoteFromHz(pitch.getPitch()).getNote());
+                } else {
+                    pitchText.setText("0.00");
+                    noteText.setText("--");
+                }
+            }
+        });
+    }
+
     private void stopListening() {
+        double grade = 0;
         analyzer.stop();
         videoView.stopPlayback();
-        spinner.setVisibility(View.VISIBLE);
-        double grade = grader.getGrade2();
-        final Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
-        intent.putExtra("grade", grade);
-        intent.putExtra("performanceFileName", analyzer.getRecordFileName());
-        intent.putExtra("song", songName);
-        intent.putExtra("performanceFile", analyzer.getRecordFile());
-        intent.putExtra("uid",FirebaseAuth.getInstance().getUid().toString());
-        startActivity(intent);
-        spinner.setVisibility(View.GONE);
-        finish();
+        if(grader != null){
+            spinner.setVisibility(View.VISIBLE);
+            grade = grader.getGrade2();
+            spinner.setVisibility(View.GONE);
+            final Intent intent = new Intent(getApplicationContext(), ResultActivity.class);
+            intent.putExtra("grade", grade);
+            intent.putExtra("performanceFileName", analyzer.getRecordFileName());
+            intent.putExtra("song", songName);
+            intent.putExtra("performanceFile", analyzer.getRecordFile());
+            intent.putExtra("uid",FirebaseAuth.getInstance().getUid().toString());
+            intent.putExtra("graphData",grader.getGraphData());
+            //only uncomment this if you want to generate a new group json file
+//            GroupWriter.writeToFile(new File(getFilesDir(),"groups.json"),grader.getJsonGroups(grader.getGroups(grader.getPerformancePitches())));
+            startActivity(intent);
+            finish();
+        }
+
 //        grader.getGrade(new Grader.GradeCallback() {
 //            @Override
 //            public void onGrade(final double grade) {
@@ -335,6 +362,63 @@ public class TarsosActivity extends FragmentActivity {
         pitchText.setText("0.00");
         noteText.setText("--");
     }
+
+//    public void loadFFMpegAndExecute(final String cmd) throws FFmpegNotSupportedException {
+//        final FFmpeg ffmpeg = FFmpeg.getInstance(getApplicationContext());
+//        ffmpeg.loadBinary(new FFmpegLoadBinaryResponseHandler() {
+//
+//            @Override
+//            public void onStart() {
+//                Log.d("TAG","onStart loading executable");
+//            }
+//
+//            @Override
+//            public void onFinish() {
+//                Log.d("TAG","onFinish loading executable");
+//            }
+//
+//            @Override
+//            public void onFailure() {
+//                Log.d("TAG","onFailure loading executable");
+//            }
+//
+//            @Override
+//            public void onSuccess() {
+//                Log.d("TAG","onSuccess loading executable");
+//                String[] command = {cmd};
+//                try {
+//                    ffmpeg.execute(command, new FFmpegExecuteResponseHandler() {
+//                        @Override
+//                        public void onStart() {
+//                            Log.d("TAG","onStart execute command");
+//                        }
+//
+//                        @Override
+//                        public void onFinish() {
+//                            Log.d("TAG","onFinish execute command");
+//                        }
+//
+//                        @Override
+//                        public void onSuccess(String message) {
+//                            Log.d("TAG","onSuccess execute command " + message);
+//                        }
+//
+//                        @Override
+//                        public void onProgress(String message) {
+//                            Log.d("TAG","onProgress execute command " + message);
+//                        }
+//
+//                        @Override
+//                        public void onFailure(String message) {
+//                            Log.d("TAG","onFailure execute command " + message);
+//                        }
+//                    });
+//                } catch (FFmpegCommandAlreadyRunningException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
+//    }
 
 }
 
